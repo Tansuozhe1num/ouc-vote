@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vote.mappers.SnapInfoMapper">
+
+    <resultMap id="base_result_map" type="com.vote.data.po.SnapInfo">
+        <result column="snap_id" property="snapId"  />
+        <result column="snap_image" property="snapImage"  />
+        <result column="sex" property="sex"  />
+        <result column="name" property="name"  />
+        <result column="qq" property="qq"  />
+        <result column="wx" property="wx"  />
+        <result column="age" property="age"  />
+        <result column="major" property="major"  />
+        <result column="ctime" property="ctime"  />
+        <result column="utime" property="utime"  />
+        <result column="status" property="status"  />
+        <result column="desc" property="desc"  />
+    </resultMap>
+
+    <sql id="base_column_list">
+        g.snap_id,g.snap_image,g.sex,g.name,g.qq,
+		 g.wx,g.age,g.major, g.ctime, g.utime, g.status, g.desc
+    </sql>
+
+    <sql id="base_condition_filed">
+        <if test="query.snap_id != null and query.snap_id!=''">
+            and  g.snap_id = #{query.snapId}
+        </if>
+        <if test="query.snapIdList != null and query.snapIdList.size() > 0">
+            and g.snap_id in
+            <foreach collection="query.snapIdList" item="snapIdItem" open="(" close=")" separator=",">
+                #{snapIdItem}
+            </foreach>
+        </if>
+        <if test="query.name != null and query.name!=''">
+            and  g.name = #{query.name}
+        </if>
+        <if test="query.age != null and query.age!=''">
+            and  g.age = #{query.age}
+        </if>
+        <if test="query.sex != null and query.sex!=''">
+            and g.sex = #{query.sex}
+        </if>
+        <if test="query.status != null">
+            and  g.status = #{query.status}
+        </if>
+        <if test="query.major != null">
+            and  g.major = #{query.major}
+        </if>
+    </sql>
+
+    <!-- 通用查询条件列-->
+    <sql id="query_condition">
+        <where>
+            <include refid="base_condition_filed" />
+            <if test="query.snapIdFuzzy!= null  and query.snapIdFuzzy!=''">
+                and  g.snap_id like concat('%', #{query.groupIdFuzzy}, '%')
+            </if>
+            <if test="query.nameFuzzy!= null  and query.nameFuzzy!=''">
+                and  g.name like concat('%', #{query.nameFuzzy}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectList" resultMap="base_result_map" >
+        SELECT <include refid="base_column_list" /> FROM snap g <include refid="query_condition" />
+        <if test="query.orderBy!=null">
+            order by ${query.orderBy}
+        </if>
+        <if test="query.simplePage!=null">
+            limit #{query.simplePage.start},#{query.simplePage.end}
+        </if>
+    </select>
+
+    <select id="selectSnapInfoList" resultMap="base_result_map">
+        SELECT <include refid="base_column_list"/> FROM snap g
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="selectByName" resultMap="base_result_map">
+        SELECT <include refid="base_column_list"/> FROM snap g
+        WHERE g.name=#{name}
+    </select>
+
+    <!-- 插入：只插入有值的字段 -->
+    <insert id="insert" parameterType="com.vote.data.po.SnapInfo">
+        INSERT INTO snap
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.snapId != null">
+                snap_id,
+            </if>
+            <if test="bean.snapImage != null">
+                snap_image,
+            </if>
+            <if test="bean.sex != null">
+                sex,
+            </if>
+            <if test="bean.name != null">
+                name,
+            </if>
+            <if test="bean.qq != null">
+                qq,
+            </if>
+            <if test="bean.wx != null">
+                wx,
+            </if>
+            <if test="bean.age != null">
+                age,
+            </if>
+            <if test="bean.major != null">
+                major,
+            </if>
+            <if test="bean.ctime != null">
+                ctime,
+            </if>
+            <if test="bean.utime != null">
+                utime,
+            </if>
+            <if test="bean.status != null">
+                status,
+            </if>
+            <if test="bean.desc != null">
+                `desc`,
+            </if>
+        </trim>
+
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="bean.snapId != null">
+                #{bean.snapId},
+            </if>
+            <if test="bean.snapImage != null">
+                #{bean.snapImage},
+            </if>
+            <if test="bean.sex != null">
+                #{bean.sex},
+            </if>
+            <if test="bean.name != null">
+                #{bean.name},
+            </if>
+            <if test="bean.qq != null">
+                #{bean.qq},
+            </if>
+            <if test="bean.wx != null">
+                #{bean.wx},
+            </if>
+            <if test="bean.age != null">
+                #{bean.age},
+            </if>
+            <if test="bean.major != null">
+                #{bean.major},
+            </if>
+            <if test="bean.ctime != null">
+                #{bean.ctime},
+            </if>
+            <if test="bean.utime != null">
+                #{bean.utime},
+            </if>
+            <if test="bean.status != null">
+                #{bean.status},
+            </if>
+            <if test="bean.desc != null">
+                #{bean.desc},
+            </if>
+        </trim>
+    </insert>
+
+</mapper>
