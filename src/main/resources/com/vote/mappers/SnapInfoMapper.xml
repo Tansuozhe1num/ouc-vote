@@ -4,28 +4,28 @@
 <mapper namespace="com.vote.mappers.SnapInfoMapper">
 
     <resultMap id="base_result_map" type="com.vote.data.po.SnapInfo">
-        <result column="snap_id" property="snapId"  />
-        <result column="snap_image" property="snapImage"  />
-        <result column="sex" property="sex"  />
-        <result column="name" property="name"  />
-        <result column="qq" property="qq"  />
-        <result column="wx" property="wx"  />
-        <result column="age" property="age"  />
-        <result column="major" property="major"  />
-        <result column="ctime" property="ctime"  />
-        <result column="utime" property="utime"  />
-        <result column="status" property="status"  />
-        <result column="desc" property="desc"  />
+        <result column="snap_id" property="snapId"/>
+        <result column="snap_image" property="snapImage"/>
+        <result column="sex" property="sex"/>
+        <result column="name" property="name"/>
+        <result column="qq" property="qq"/>
+        <result column="wx" property="wx"/>
+        <result column="age" property="age"/>
+        <result column="major" property="major"/>
+        <result column="ctime" property="ctime"/>
+        <result column="utime" property="utime"/>
+        <result column="status" property="status"/>
+        <result column="desc" property="desc"/>
     </resultMap>
 
     <sql id="base_column_list">
         g.snap_id,g.snap_image,g.sex,g.name,g.qq,
-		 g.wx,g.age,g.major, g.ctime, g.utime, g.status, g.desc
+        g.wx,g.age,g.major, g.ctime, g.utime, g.status, g.desc
     </sql>
 
     <sql id="base_condition_filed">
-        <if test="query.snap_id != null and query.snap_id!=''">
-            and  g.snap_id = #{query.snapId}
+        <if test="query.snapId != null">
+            and g.snap_id = #{query.snapId}
         </if>
         <if test="query.snapIdList != null and query.snapIdList.size() > 0">
             and g.snap_id in
@@ -34,37 +34,33 @@
             </foreach>
         </if>
         <if test="query.name != null and query.name!=''">
-            and  g.name = #{query.name}
+            and g.name = #{query.name}
         </if>
-        <if test="query.age != null and query.age!=''">
-            and  g.age = #{query.age}
+        <if test="query.age != null">
+            and g.age = #{query.age}
         </if>
-        <if test="query.sex != null and query.sex!=''">
+        <if test="query.sex != null">
             and g.sex = #{query.sex}
         </if>
         <if test="query.status != null">
-            and  g.status = #{query.status}
+            and g.status = #{query.status}
         </if>
         <if test="query.major != null">
-            and  g.major = #{query.major}
+            and g.major = #{query.major}
         </if>
     </sql>
 
-    <!-- 通用查询条件列-->
     <sql id="query_condition">
         <where>
-            <include refid="base_condition_filed" />
-            <if test="query.snapIdFuzzy!= null  and query.snapIdFuzzy!=''">
-                and  g.snap_id like concat('%', #{query.groupIdFuzzy}, '%')
-            </if>
+            <include refid="base_condition_filed"/>
             <if test="query.nameFuzzy!= null  and query.nameFuzzy!=''">
-                and  g.name like concat('%', #{query.nameFuzzy}, '%')
+                and g.name like concat('%', #{query.nameFuzzy}, '%')
             </if>
         </where>
     </sql>
 
-    <select id="selectList" resultMap="base_result_map" >
-        SELECT <include refid="base_column_list" /> FROM snap g <include refid="query_condition" />
+    <select id="selectList" resultMap="base_result_map">
+        SELECT <include refid="base_column_list"/> FROM snap g <include refid="query_condition"/>
         <if test="query.orderBy!=null">
             order by ${query.orderBy}
         </if>
@@ -75,6 +71,7 @@
 
     <select id="selectSnapInfoList" resultMap="base_result_map">
         SELECT <include refid="base_column_list"/> FROM snap g
+        ORDER BY g.snap_id DESC
         LIMIT #{offset}, #{limit}
     </select>
 
@@ -83,8 +80,16 @@
         WHERE g.name=#{name}
     </select>
 
-    <!-- 插入：只插入有值的字段 -->
-    <insert id="insert" parameterType="com.vote.data.po.SnapInfo">
+    <select id="selectBySnapId" resultMap="base_result_map">
+        SELECT <include refid="base_column_list"/> FROM snap g
+        WHERE g.snap_id=#{snapId}
+    </select>
+
+    <insert id="insert"
+            parameterType="com.vote.data.po.SnapInfo"
+            useGeneratedKeys="true"
+            keyProperty="bean.snapId"
+            keyColumn="snap_id">
         INSERT INTO snap
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="bean.snapId != null">
@@ -124,7 +129,6 @@
                 `desc`,
             </if>
         </trim>
-
         <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
             <if test="bean.snapId != null">
                 #{bean.snapId},

@@ -26,6 +26,11 @@ public class SnapController extends ABaseController {
         return getSuccessResponseVO(snapInfoList);
     }
 
+    @RequestMapping("/detail")
+    public ResponseVO getSnapDetail(@NotNull Integer snapId) {
+        return getSuccessResponseVO(this.snapServer.getSnapInfoById(snapId));
+    }
+
     @RequestMapping("/save")
     public ResponseVO saveSnapList(
             @NotNull String name, @NotNull MultipartFile avator,

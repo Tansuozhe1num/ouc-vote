@@ -1,0 +1,15 @@
+CREATE TABLE snap (
+    snap_id       INT NOT NULL AUTO_INCREMENT COMMENT '快照ID',
+    snap_image    VARCHAR(64)  DEFAULT NULL COMMENT '快照图片',
+    sex           INT          DEFAULT NULL COMMENT '性别',
+    name          VARCHAR(64)  DEFAULT NULL COMMENT '姓名',
+    qq            VARCHAR(32)  DEFAULT NULL COMMENT 'QQ',
+    wx            VARCHAR(64)  DEFAULT NULL COMMENT '微信',
+    age           INT          DEFAULT NULL COMMENT '年龄',
+    major         VARCHAR(128) DEFAULT NULL COMMENT '专业',
+    ctime         BIGINT       DEFAULT NULL COMMENT '创建时间',
+    utime         BIGINT       DEFAULT NULL COMMENT '更新时间',
+    status        INT          DEFAULT NULL COMMENT '状态',
+    `desc`        VARCHAR(512) DEFAULT NULL COMMENT '描述',
+    PRIMARY KEY (snap_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Snap信息表';

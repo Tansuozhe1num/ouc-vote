@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>OUC · 校花校草墙</title>
+  <link rel="stylesheet" href="./css/app.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="logo" href="#/">OUC - VOTE</a>
+    <div class="search-wrap">
+      <input id="searchInput" type="search" placeholder="搜名字、专业、简介…" autocomplete="off" />
+    </div>
+    <nav class="tabs" aria-label="筛选">
+      <button class="tab is-active" data-sex="">全部</button>
+      <button class="tab" data-sex="0">校花</button>
+      <button class="tab" data-sex="1">校草</button>
+    </nav>
+    <button class="btn-publish" id="openPublish" type="button">发布</button>
+  </header>
+
+  <main class="page">
+    <section id="feedView" class="feed-view">
+      <div id="masonry" class="masonry"></div>
+      <div id="feedEmpty" class="empty hidden">还没有人上墙，来发布第一张 snap 吧</div>
+      <div id="feedSentinel" class="sentinel"></div>
+      <p id="feedEnd" class="feed-end hidden">已经到底啦</p>
+    </section>
+  </main>
+
+  <button class="fab" id="fabPublish" type="button" aria-label="发布">+</button>
+
+  <div id="detailOverlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <button class="overlay-close" id="closeDetail" type="button" aria-label="关闭">×</button>
+    <article class="detail-sheet">
+      <div class="detail-media">
+        <img id="detailImage" alt="" />
+      </div>
+      <div class="detail-side">
+        <header class="detail-head">
+          <div class="avatar" id="detailAvatar"></div>
+          <div>
+            <h2 id="detailName"></h2>
+            <p class="meta" id="detailMeta"></p>
+          </div>
+          <span class="badge" id="detailBadge"></span>
+        </header>
+        <p class="detail-desc" id="detailDesc"></p>
+        <div class="contact" id="detailContact"></div>
+        <section class="comments">
+          <h3>评论 <span id="commentCount">0</span></h3>
+          <ul id="commentList" class="comment-list"></ul>
+          <p id="commentEmpty" class="empty-mini hidden">还没有评论，来抢沙发</p>
+        </section>
+        <div id="replyBar" class="reply-bar hidden">
+          <span id="replyHint">回复</span>
+          <button type="button" id="cancelReply">取消</button>
+        </div>
+        <form id="commentForm" class="composer">
+          <input id="commentNick" type="text" maxlength="20" placeholder="昵称" required />
+          <input id="commentContent" type="text" maxlength="200" placeholder="说点好听的…" required />
+          <button type="submit" id="commentSubmit">发送</button>
+        </form>
+      </div>
+    </article>
+  </div>
+
+  <div id="publishOverlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <button class="overlay-close" id="closePublish" type="button" aria-label="关闭">×</button>
+    <form id="publishForm" class="publish-sheet">
+      <h2>上传校花 / 校草</h2>
+      <label class="cover-picker">
+        <input id="avatorInput" name="avator" type="file" accept="image/*" required />
+        <img id="coverPreview" alt="" class="hidden" />
+        <span id="coverHint">点击上传照片</span>
+      </label>
+      <div class="grid-2">
+        <label>昵称<input name="name" maxlength="20" required placeholder="上墙显示的名字" /></label>
+        <label>年龄<input name="age" type="number" min="16" max="40" required placeholder="18" /></label>
+      </div>
+      <div class="grid-2">
+        <label>身份
+          <select name="sex" required>
+            <option value="0">校花</option>
+            <option value="1">校草</option>
+          </select>
+        </label>
+        <label>专业<input name="major" maxlength="30" required placeholder="例如 计算机" /></label>
+      </div>
+      <div class="grid-2">
+        <label>QQ<input name="qq" maxlength="20" placeholder="选填" /></label>
+        <label>微信<input name="wx" maxlength="40" placeholder="选填" /></label>
+      </div>
+      <label>简介<textarea name="desc" maxlength="300" placeholder="一句话介绍 TA"></textarea></label>
+      <p id="publishError" class="form-error hidden"></p>
+      <button class="btn-submit" type="submit">发布到校园墙</button>
+    </form>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="./js/oss-image-cache.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>

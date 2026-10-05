@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.vote.mappers.ChildCommentInfoMapper">
+
+    <resultMap id="base_result_map" type="com.vote.data.po.ChildCommentInfo">
+        <result column="c_id" property="cId"/>
+        <result column="snap_id" property="snapId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="text" property="text"/>
+        <result column="ctime" property="ctime"/>
+        <result column="status" property="status"/>
+        <result column="user_id" property="userId"/>
+    </resultMap>
+
+    <sql id="base_column_list">
+        c.c_id,
+        c.snap_id,
+        c.parent_id,
+        c.text,
+        c.ctime,
+        c.status,
+        c.user_id
+    </sql>
+
+    <sql id="base_condition_field">
+        <if test="query.cId != null">
+            AND c.c_id = #{query.cId}
+        </if>
+        <if test="query.snapId != null">
+            AND c.snap_id = #{query.snapId}
+        </if>
+        <if test="query.snapIdList != null and query.snapIdList.size() > 0">
+            AND c.snap_id IN
+            <foreach collection="query.snapIdList"
+                     item="snapIdItem"
+                     open="("
+                     close=")"
+                     separator=",">
+                #{snapIdItem}
+            </foreach>
+        </if>
+        <if test="query.parentId != null">
+            AND c.parent_id = #{query.parentId}
+        </if>
+        <if test="query.userId != null and query.userId != ''">
+            AND c.user_id = #{query.userId}
+        </if>
+        <if test="query.status != null">
+            AND c.status = #{query.status}
+        </if>
+    </sql>
+
+    <sql id="query_condition">
+        <where>
+            <include refid="base_condition_field"/>
+            <if test="query.textFuzzy != null and query.textFuzzy != ''">
+                AND c.text LIKE CONCAT('%', #{query.textFuzzy}, '%')
+            </if>
+            <if test="query.userIdFuzzy != null and query.userIdFuzzy != ''">
+                AND c.user_id LIKE CONCAT('%', #{query.userIdFuzzy}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectList" resultMap="base_result_map">
+        SELECT
+        <include refid="base_column_list"/>
+        FROM child_comment_info c
+        <include refid="query_condition"/>
+        <if test="query.orderBy != null and query.orderBy != ''">
+            ORDER BY ${query.orderBy}
+        </if>
+        <if test="query.simplePage != null">
+            LIMIT #{query.simplePage.start}, #{query.simplePage.end}
+        </if>
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM child_comment_info c
+        <include refid="query_condition"/>
+    </select>
+
+    <select id="selectByCId" resultMap="base_result_map">
+        SELECT
+        <include refid="base_column_list"/>
+        FROM child_comment_info c
+        WHERE c.c_id = #{cId}
+    </select>
+
+    <select id="selectByParentId" resultMap="base_result_map">
+        SELECT
+        <include refid="base_column_list"/>
+        FROM child_comment_info c
+        WHERE c.parent_id = #{parentId}
+          AND c.status = 0
+        ORDER BY c.c_id ASC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="selectBySnapId" resultMap="base_result_map">
+        SELECT
+        <include refid="base_column_list"/>
+        FROM child_comment_info c
+        WHERE c.snap_id = #{snapId}
+          AND c.status = 0
+        ORDER BY c.c_id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <insert id="insert"
+            parameterType="com.vote.data.po.ChildCommentInfo"
+            useGeneratedKeys="true"
+            keyProperty="bean.cId"
+            keyColumn="c_id">
+        INSERT INTO child_comment_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bean.snapId != null">
+                snap_id,
+            </if>
+            <if test="bean.parentId != null">
+                parent_id,
+            </if>
+            <if test="bean.text != null">
+                text,
+            </if>
+            <if test="bean.ctime != null">
+                ctime,
+            </if>
+            <if test="bean.status != null">
+                status,
+            </if>
+            <if test="bean.userId != null">
+                user_id,
+            </if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="bean.snapId != null">
+                #{bean.snapId},
+            </if>
+            <if test="bean.parentId != null">
+                #{bean.parentId},
+            </if>
+            <if test="bean.text != null">
+                #{bean.text},
+            </if>
+            <if test="bean.ctime != null">
+                #{bean.ctime},
+            </if>
+            <if test="bean.status != null">
+                #{bean.status},
+            </if>
+            <if test="bean.userId != null">
+                #{bean.userId},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateText">
+        UPDATE child_comment_info
+        SET text = #{text}
+        WHERE c_id = #{cId}
+          AND status = 0
+    </update>
+
+    <update id="updateStatus">
+        UPDATE child_comment_info
+        SET status = #{status}
+        WHERE c_id = #{cId}
+    </update>
+
+    <delete id="deleteByCId">
+        DELETE FROM child_comment_info
+        WHERE c_id = #{cId}
+    </delete>
+
+</mapper>

@@ -3,13 +3,13 @@ package com.vote.query;
 import java.util.List;
 
 public class SnapInfoQuery extends BaseParam {
-    private String snapId;
+    private Integer snapId;
 
-    private List<String> snapIdList;
-
-    private String snapIdFuzzy;
+    private List<Integer> snapIdList;
 
     private String name;
+
+    private String nameFuzzy;
 
     private Integer sex;
 
@@ -23,28 +23,20 @@ public class SnapInfoQuery extends BaseParam {
 
     private String major;
 
-    public String getSnapId() {
+    public Integer getSnapId() {
         return snapId;
     }
 
-    public void setSnapId(String snapId) {
+    public void setSnapId(Integer snapId) {
         this.snapId = snapId;
     }
 
-    public List<String> getSnapIdList() {
+    public List<Integer> getSnapIdList() {
         return snapIdList;
     }
 
-    public void setSnapIdList(List<String> snapIdList) {
+    public void setSnapIdList(List<Integer> snapIdList) {
         this.snapIdList = snapIdList;
-    }
-
-    public String getSnapIdFuzzy() {
-        return snapIdFuzzy;
-    }
-
-    public void setSnapIdFuzzy(String snapIdFuzzy) {
-        this.snapIdFuzzy = snapIdFuzzy;
     }
 
     public String getName() {
@@ -53,6 +45,14 @@ public class SnapInfoQuery extends BaseParam {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getNameFuzzy() {
+        return nameFuzzy;
+    }
+
+    public void setNameFuzzy(String nameFuzzy) {
+        this.nameFuzzy = nameFuzzy;
     }
 
     public Integer getSex() {

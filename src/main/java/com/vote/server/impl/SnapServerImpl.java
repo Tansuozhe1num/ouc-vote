@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.UUID;
+
 @Service
 public class SnapServerImpl implements SnapServer {
 
@@ -37,6 +37,18 @@ public class SnapServerImpl implements SnapServer {
 
         Integer offset = (page - 1) * size;
         return this.snapInfoMapper.selectSnapInfoList(size, offset);
+    }
+
+    @Override
+    public SnapInfo getSnapInfoById(Integer snapId) {
+        if (snapId == null || snapId <= 0) {
+            throw new BusinessException("snapId不能为空");
+        }
+        SnapInfo snapInfo = this.snapInfoMapper.selectBySnapId(snapId);
+        if (snapInfo == null) {
+            throw new BusinessException("内容不存在");
+        }
+        return snapInfo;
     }
 
     @Override
@@ -65,8 +77,8 @@ public class SnapServerImpl implements SnapServer {
 
         long now = System.currentTimeMillis();
 
+        // snap_id 由数据库自增生成
         SnapInfo snapInfo = SnapInfo.builder()
-                .snapId(UUID.randomUUID().toString())
                 .name(name)
                 .snapImage(url)
                 .age(age)

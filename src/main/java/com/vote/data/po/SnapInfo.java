@@ -1,13 +1,17 @@
 package com.vote.data.po;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class SnapInfo {
 
-    private String snapId;
+    private Integer snapId;
 
     private String snapImage;
 

@@ -10,4 +10,6 @@ public interface SnapInfoMapper<T, P> extends BaseMapper<T, P> {
     List<SnapInfo> selectSnapInfoList(@Param("limit") Integer limit, @Param("offset") Integer offset);
 
     SnapInfo selectByName(@Param("name") String name);
+
+    SnapInfo selectBySnapId(@Param("snapId") Integer snapId);
 }

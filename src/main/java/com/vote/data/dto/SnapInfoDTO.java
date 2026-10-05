@@ -7,23 +7,23 @@ import lombok.Data;
 @Data
 public class SnapInfoDTO {
 
-    public String SnapId;
+    private Integer snapId;
 
-    public String SnapImage;
+    private String snapImage;
 
-    public Integer sex;
+    private Integer sex;
 
-    public String name;
+    private String name;
 
-    public String qq;
+    private String qq;
 
-    public String wx;
+    private String wx;
 
-    public Integer age;
+    private Integer age;
 
-    public String major;
+    private String major;
 
-    public Long ctime;
+    private Long ctime;
 
-    public Long utime;
+    private Long utime;
 }
