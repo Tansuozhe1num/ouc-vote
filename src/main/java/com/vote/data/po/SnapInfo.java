@@ -13,25 +13,23 @@ public class SnapInfo {
 
     private Integer snapId;
 
+    private Long userId;
+
     private String snapImage;
 
-    private Integer sex;
-
-    private String name;
-
-    private String qq;
-
-    private String wx;
-
-    private Integer age;
-
-    private String major;
+    private Integer type;
 
     private Long ctime;
-
-    private Long utime;
 
     private Integer status;
 
     private String desc;
+
+    private String userName;
+
+    private String userDescription;
+
+    private String major;
+
+    private Integer sex;
 }

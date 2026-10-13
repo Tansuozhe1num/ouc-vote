@@ -6,9 +6,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface SnapServer {
-    List<SnapInfo> getSnapInfoList(Integer page, Integer size);
+    List<SnapInfo> getSnapInfoList(Integer page, Integer size, Integer type);
 
     SnapInfo getSnapInfoById(Integer snapId);
 
-    void saveSnapInfo(String name, MultipartFile avator, Integer age, Integer sex, String major, String qq, String wx, String desc);
+    SnapInfo saveSnapInfo(Long userId, MultipartFile avatar, String desc, Integer type, String idempotencyKey);
+
+    List<SnapInfo> getMySnapInfoList(Long userId, Integer page, Integer size);
 }

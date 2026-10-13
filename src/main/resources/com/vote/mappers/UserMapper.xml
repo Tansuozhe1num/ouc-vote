@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vote.mappers.UserMapper">
+    <resultMap id="userMap" type="com.vote.data.po.User">
+        <id column="id" property="id"/><result column="user_id" property="userId"/>
+        <result column="name" property="name"/><result column="status" property="status"/>
+        <result column="description" property="description"/><result column="sex" property="sex"/>
+        <result column="ctime" property="ctime"/><result column="major" property="major"/>
+        <result column="token" property="token"/><result column="refreshtoken" property="refreshtoken"/>
+        <result column="login_name" property="loginName"/><result column="password_hash" property="passwordHash"/>
+        <result column="wechat_openid" property="wechatOpenid"/>
+    </resultMap>
+    <sql id="columns">id,user_id,name,status,description,sex,ctime,major,token,refreshtoken,login_name,password_hash,wechat_openid</sql>
+    <select id="selectByUserId" resultMap="userMap">SELECT <include refid="columns"/> FROM `user` WHERE user_id=#{userId}</select>
+    <select id="selectByLoginName" resultMap="userMap">SELECT <include refid="columns"/> FROM `user` WHERE login_name=#{loginName}</select>
+    <select id="selectByWechatOpenid" resultMap="userMap">SELECT <include refid="columns"/> FROM `user` WHERE wechat_openid=#{openid}</select>
+    <select id="selectByIds" resultMap="userMap">SELECT <include refid="columns"/> FROM `user` WHERE user_id IN
+        <foreach collection="ids" item="item" open="(" close=")" separator=",">#{item}</foreach>
+        AND status=0 ORDER BY FIELD(user_id,<foreach collection="ids" item="item" separator=",">#{item}</foreach>)</select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO `user`(user_id,name,status,description,sex,ctime,major,token,refreshtoken,login_name,password_hash,wechat_openid)
+        VALUES(#{userId},#{name},#{status},#{description},#{sex},#{ctime},#{major},#{token},#{refreshtoken},#{loginName},#{passwordHash},#{wechatOpenid})
+    </insert>
+    <update id="updateToken">UPDATE `user` SET token=#{token},refreshtoken=#{refreshtoken} WHERE user_id=#{userId} AND status=0</update>
+    <update id="updateProfile">UPDATE `user` SET name=#{name},description=#{description},sex=#{sex},major=#{major} WHERE user_id=#{userId} AND status=0</update>
+    <update id="bindWechat">UPDATE `user` SET wechat_openid=#{openid} WHERE user_id=#{userId} AND status=0</update>
+</mapper>

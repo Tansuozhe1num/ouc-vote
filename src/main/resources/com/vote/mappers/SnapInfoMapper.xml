@@ -1,172 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.vote.mappers.SnapInfoMapper">
-
-    <resultMap id="base_result_map" type="com.vote.data.po.SnapInfo">
-        <result column="snap_id" property="snapId"/>
-        <result column="snap_image" property="snapImage"/>
-        <result column="sex" property="sex"/>
-        <result column="name" property="name"/>
-        <result column="qq" property="qq"/>
-        <result column="wx" property="wx"/>
-        <result column="age" property="age"/>
-        <result column="major" property="major"/>
-        <result column="ctime" property="ctime"/>
-        <result column="utime" property="utime"/>
-        <result column="status" property="status"/>
-        <result column="desc" property="desc"/>
+    <resultMap id="snapMap" type="com.vote.data.po.SnapInfo">
+        <id column="snap_id" property="snapId"/><result column="user_id" property="userId"/>
+        <result column="snap_image" property="snapImage"/><result column="status" property="status"/>
+        <result column="desc" property="desc"/><result column="type" property="type"/><result column="ctime" property="ctime"/>
+        <result column="user_name" property="userName"/><result column="user_description" property="userDescription"/>
+        <result column="major" property="major"/><result column="sex" property="sex"/>
     </resultMap>
-
-    <sql id="base_column_list">
-        g.snap_id,g.snap_image,g.sex,g.name,g.qq,
-        g.wx,g.age,g.major, g.ctime, g.utime, g.status, g.desc
-    </sql>
-
-    <sql id="base_condition_filed">
-        <if test="query.snapId != null">
-            and g.snap_id = #{query.snapId}
-        </if>
-        <if test="query.snapIdList != null and query.snapIdList.size() > 0">
-            and g.snap_id in
-            <foreach collection="query.snapIdList" item="snapIdItem" open="(" close=")" separator=",">
-                #{snapIdItem}
-            </foreach>
-        </if>
-        <if test="query.name != null and query.name!=''">
-            and g.name = #{query.name}
-        </if>
-        <if test="query.age != null">
-            and g.age = #{query.age}
-        </if>
-        <if test="query.sex != null">
-            and g.sex = #{query.sex}
-        </if>
-        <if test="query.status != null">
-            and g.status = #{query.status}
-        </if>
-        <if test="query.major != null">
-            and g.major = #{query.major}
-        </if>
-    </sql>
-
-    <sql id="query_condition">
-        <where>
-            <include refid="base_condition_filed"/>
-            <if test="query.nameFuzzy!= null  and query.nameFuzzy!=''">
-                and g.name like concat('%', #{query.nameFuzzy}, '%')
-            </if>
-        </where>
-    </sql>
-
-    <select id="selectList" resultMap="base_result_map">
-        SELECT <include refid="base_column_list"/> FROM snap g <include refid="query_condition"/>
-        <if test="query.orderBy!=null">
-            order by ${query.orderBy}
-        </if>
-        <if test="query.simplePage!=null">
-            limit #{query.simplePage.start},#{query.simplePage.end}
-        </if>
-    </select>
-
-    <select id="selectSnapInfoList" resultMap="base_result_map">
-        SELECT <include refid="base_column_list"/> FROM snap g
-        ORDER BY g.snap_id DESC
-        LIMIT #{offset}, #{limit}
-    </select>
-
-    <select id="selectByName" resultMap="base_result_map">
-        SELECT <include refid="base_column_list"/> FROM snap g
-        WHERE g.name=#{name}
-    </select>
-
-    <select id="selectBySnapId" resultMap="base_result_map">
-        SELECT <include refid="base_column_list"/> FROM snap g
-        WHERE g.snap_id=#{snapId}
-    </select>
-
-    <insert id="insert"
-            parameterType="com.vote.data.po.SnapInfo"
-            useGeneratedKeys="true"
-            keyProperty="bean.snapId"
-            keyColumn="snap_id">
-        INSERT INTO snap
-        <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="bean.snapId != null">
-                snap_id,
-            </if>
-            <if test="bean.snapImage != null">
-                snap_image,
-            </if>
-            <if test="bean.sex != null">
-                sex,
-            </if>
-            <if test="bean.name != null">
-                name,
-            </if>
-            <if test="bean.qq != null">
-                qq,
-            </if>
-            <if test="bean.wx != null">
-                wx,
-            </if>
-            <if test="bean.age != null">
-                age,
-            </if>
-            <if test="bean.major != null">
-                major,
-            </if>
-            <if test="bean.ctime != null">
-                ctime,
-            </if>
-            <if test="bean.utime != null">
-                utime,
-            </if>
-            <if test="bean.status != null">
-                status,
-            </if>
-            <if test="bean.desc != null">
-                `desc`,
-            </if>
-        </trim>
-        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
-            <if test="bean.snapId != null">
-                #{bean.snapId},
-            </if>
-            <if test="bean.snapImage != null">
-                #{bean.snapImage},
-            </if>
-            <if test="bean.sex != null">
-                #{bean.sex},
-            </if>
-            <if test="bean.name != null">
-                #{bean.name},
-            </if>
-            <if test="bean.qq != null">
-                #{bean.qq},
-            </if>
-            <if test="bean.wx != null">
-                #{bean.wx},
-            </if>
-            <if test="bean.age != null">
-                #{bean.age},
-            </if>
-            <if test="bean.major != null">
-                #{bean.major},
-            </if>
-            <if test="bean.ctime != null">
-                #{bean.ctime},
-            </if>
-            <if test="bean.utime != null">
-                #{bean.utime},
-            </if>
-            <if test="bean.status != null">
-                #{bean.status},
-            </if>
-            <if test="bean.desc != null">
-                #{bean.desc},
-            </if>
-        </trim>
+    <sql id="columns">s.snap_id,s.user_id,s.snap_image,s.status,s.`desc`,s.type,s.ctime,u.name user_name,u.description user_description,u.major,u.sex</sql>
+    <sql id="joins">FROM snap s JOIN `user` u ON u.user_id=s.user_id</sql>
+    <select id="selectSnapInfoList" resultMap="snapMap">SELECT <include refid="columns"/> <include refid="joins"/>
+        WHERE s.status=0 AND u.status=0 ORDER BY s.snap_id DESC LIMIT #{offset},#{limit}</select>
+    <select id="selectSnapInfoListByType" resultMap="snapMap">SELECT <include refid="columns"/> <include refid="joins"/>
+        WHERE s.status=0 AND s.type=#{type} AND u.status=0 ORDER BY s.snap_id DESC LIMIT #{offset},#{limit}</select>
+    <select id="selectBySnapId" resultMap="snapMap">SELECT <include refid="columns"/> <include refid="joins"/>
+        WHERE s.snap_id=#{snapId} AND s.status=0 AND u.status=0</select>
+    <select id="selectByUserId" resultMap="snapMap">SELECT <include refid="columns"/> <include refid="joins"/>
+        WHERE s.user_id=#{userId} AND s.status=0 ORDER BY s.snap_id DESC LIMIT 1</select>
+    <select id="selectMine" resultMap="snapMap">SELECT <include refid="columns"/> <include refid="joins"/>
+        WHERE s.user_id=#{userId} AND s.status IN (0,1,2) ORDER BY s.snap_id DESC LIMIT #{offset},#{limit}</select>
+    <select id="selectByIds" resultMap="snapMap">SELECT <include refid="columns"/> <include refid="joins"/>
+        WHERE s.snap_id IN <foreach collection="ids" item="id" open="(" close=")" separator=",">#{id}</foreach>
+        AND s.status=0 AND u.status=0 ORDER BY FIELD(s.snap_id,<foreach collection="ids" item="id" separator=",">#{id}</foreach>)</select>
+    <select id="selectMaxSnapId" resultType="java.lang.Integer">SELECT COALESCE(MAX(snap_id),0) FROM snap</select>
+    <update id="updateStatus">UPDATE snap SET status=#{status} WHERE snap_id=#{snapId} AND user_id=#{userId}</update>
+    <select id="selectList" resultMap="snapMap">SELECT <include refid="columns"/> <include refid="joins"/> WHERE s.status=0 ORDER BY s.snap_id DESC</select>
+    <insert id="insert" parameterType="com.vote.data.po.SnapInfo" useGeneratedKeys="true" keyProperty="bean.snapId" keyColumn="snap_id">
+        INSERT INTO snap(user_id,snap_image,status,`desc`,type,ctime)
+        VALUES(#{bean.userId},#{bean.snapImage},#{bean.status},#{bean.desc},#{bean.type},#{bean.ctime})
     </insert>
-
 </mapper>

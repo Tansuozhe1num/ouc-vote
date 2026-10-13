@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vote.mappers.UserFollowMapper">
+    <resultMap id="followMap" type="com.vote.data.po.UserFollow">
+        <id column="id" property="id"/><result column="user_id" property="userId"/>
+        <result column="follower_id" property="followerId"/><result column="status" property="status"/><result column="ctime" property="ctime"/>
+    </resultMap>
+    <select id="select" resultMap="followMap">SELECT id,user_id,follower_id,status,ctime FROM user_follow WHERE user_id=#{userId} AND follower_id=#{followerId}</select>
+    <select id="selectStatus" resultType="java.lang.Integer">SELECT status FROM user_follow WHERE user_id=#{userId} AND follower_id=#{followerId}</select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">INSERT INTO user_follow(user_id,follower_id,status,ctime) VALUES(#{userId},#{followerId},#{status},#{ctime})</insert>
+    <update id="updateStatus">UPDATE user_follow SET status=#{status} WHERE user_id=#{userId} AND follower_id=#{followerId}</update>
+    <select id="selectFollowingIds" resultType="long">SELECT user_id FROM user_follow WHERE follower_id=#{userId} AND status=0 ORDER BY ctime DESC</select>
+    <select id="selectFollowerIds" resultType="long">SELECT follower_id FROM user_follow WHERE user_id=#{userId} AND status=0 ORDER BY ctime DESC</select>
+</mapper>

@@ -8,8 +8,12 @@ import java.util.List;
 public interface SnapInfoMapper<T, P> extends BaseMapper<T, P> {
 
     List<SnapInfo> selectSnapInfoList(@Param("limit") Integer limit, @Param("offset") Integer offset);
-
-    SnapInfo selectByName(@Param("name") String name);
+    List<SnapInfo> selectSnapInfoListByType(@Param("limit") Integer limit, @Param("offset") Integer offset, @Param("type") Integer type);
+    List<SnapInfo> selectByIds(@Param("ids") List<Integer> ids);
+    Integer selectMaxSnapId();
+    SnapInfo selectByUserId(@Param("userId") Long userId);
+    List<SnapInfo> selectMine(@Param("userId") Long userId, @Param("limit") Integer limit, @Param("offset") Integer offset);
+    Integer updateStatus(@Param("snapId") Integer snapId, @Param("userId") Long userId, @Param("status") Integer status);
 
     SnapInfo selectBySnapId(@Param("snapId") Integer snapId);
 }

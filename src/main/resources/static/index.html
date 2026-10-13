@@ -1,106 +1,33 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>OUC · 校花校草墙</title>
-  <link rel="stylesheet" href="./css/app.css" />
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" /><meta name="theme-color" content="#fffaf8" />
+  <title>同频 Campus · 校内找搭子</title><link rel="stylesheet" href="./css/app.css" />
 </head>
 <body>
   <header class="topbar">
-    <a class="logo" href="#/">OUC - VOTE</a>
-    <div class="search-wrap">
-      <input id="searchInput" type="search" placeholder="搜名字、专业、简介…" autocomplete="off" />
-    </div>
-    <nav class="tabs" aria-label="筛选">
-      <button class="tab is-active" data-sex="">全部</button>
-      <button class="tab" data-sex="0">校花</button>
-      <button class="tab" data-sex="1">校草</button>
-    </nav>
-    <button class="btn-publish" id="openPublish" type="button">发布</button>
+    <a class="brand" href="#/feed" aria-label="同频首页"><span class="brand-mark">同</span><span>同频<span class="brand-en">CAMPUS</span></span></a>
+    <nav class="main-nav" aria-label="主导航"><button class="nav-link is-active" data-view="feed">发现</button><button class="nav-link" data-view="draw">随机搭子</button></nav>
+    <label class="search-box"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="搜专业、关键词" autocomplete="off" /></label>
+    <div class="top-actions"><button class="quiet-action" id="inboxButton" type="button" aria-label="消息">消息 <span class="inbox-dot hidden" id="inboxDot"></span></button><button class="login-button" id="loginButton" type="button">登录 / 注册</button><button class="user-chip hidden" id="userChip" type="button"><span class="mini-avatar" id="userAvatar">同</span><span id="userNameLabel">个人主页</span></button></div>
   </header>
-
-  <main class="page">
+  <main class="shell">
     <section id="feedView" class="feed-view">
-      <div id="masonry" class="masonry"></div>
-      <div id="feedEmpty" class="empty hidden">还没有人上墙，来发布第一张 snap 吧</div>
-      <div id="feedSentinel" class="sentinel"></div>
-      <p id="feedEnd" class="feed-end hidden">已经到底啦</p>
+      <div class="feed-intro"><div><p class="eyebrow">CAMPUS, IN SYNC</p><h1>在校园里，遇见刚好同频的人。</h1><p class="intro-copy">自习、出发、运动，下一段日常可以一起。</p></div><button id="openPublish" class="publish-button" type="button"><span>＋</span> 发布找搭子</button></div>
+      <div class="topic-row" role="group" aria-label="搭子类型"><button class="topic-chip is-active" data-type="">全部</button><button class="topic-chip" data-type="0"><span>✳</span> 学习</button><button class="topic-chip" data-type="1"><span>↗</span> 旅游</button><button class="topic-chip" data-type="2"><span>♡</span> 恋爱</button><button class="topic-chip" data-type="3"><span>＋</span> 其他</button><span class="topic-note">找到兴趣相投的同学</span></div>
+      <div id="masonry" class="masonry"></div><div id="feedEmpty" class="empty-state hidden"><div class="empty-icon">☁</div><h2>这里还很安静</h2><p>发一条搭子动态，让同频的人看见你。</p></div><div id="feedSentinel" class="sentinel"></div><p id="feedEnd" class="feed-end hidden">今天先逛到这里</p>
     </section>
+    <section id="drawView" class="draw-view hidden"><div class="draw-copy"><p class="eyebrow">A LITTLE SERENDIPITY</p><h1>让缘分，<br />从一次随机开始。</h1><p>正在寻找搭子的同学，等你来认识。</p><button id="drawButton" class="draw-button" type="button"><span class="draw-star">✦</span><span id="drawButtonLabel">抽一位搭子</span><span class="draw-arrow">→</span></button><div class="draw-footnote">每次抽取都会从当前公开的找搭子动态中随机匹配</div></div><div class="draw-stage" id="drawStage"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="draw-card" id="drawCard"><div class="draw-card-art" id="drawCardArt"><span class="draw-spark">✳</span></div><div class="draw-card-content"><span class="type-label" id="drawType">等你来抽取</span><h2 id="drawTitle">下一位同频的人</h2><p id="drawDesc">点一下按钮，看看今天会遇见谁。</p><div class="draw-person"><span class="avatar" id="drawAvatar">?</span><span><strong id="drawName">神秘同学</strong><small id="drawMajor">缘分正在路上</small></span><button id="drawChat" class="round-chat" type="button" title="发起聊天" disabled>↗</button></div></div></div><span class="float-note note-a">一起去做点喜欢的事</span><span class="float-note note-b">好巧，你也在找搭子</span></div></section>
+    <section id="profileView" class="profile-view hidden"><div class="profile-header"><div class="profile-avatar" id="profileAvatar">同</div><div class="profile-main"><div class="profile-name-row"><h1 id="profileName">个人主页</h1><button class="outline-button" id="editProfile" type="button">编辑资料</button></div><p id="profileMeta" class="profile-meta">填写专业，找到同频的人</p><p id="profileDescription" class="profile-description">还没有自我介绍</p><div class="profile-stats"><button id="showFollowing" type="button"><strong id="followingCount">0</strong>关注</button><button id="showFollowers" type="button"><strong id="followerCount">0</strong>粉丝</button></div></div></div><div class="profile-tabs"><button class="is-active" type="button">我的动态</button><button id="logoutButton" type="button">退出登录</button></div><div id="mySnaps" class="masonry profile-masonry"></div></section>
   </main>
-
-  <button class="fab" id="fabPublish" type="button" aria-label="发布">+</button>
-
-  <div id="detailOverlay" class="overlay hidden" role="dialog" aria-modal="true">
-    <button class="overlay-close" id="closeDetail" type="button" aria-label="关闭">×</button>
-    <article class="detail-sheet">
-      <div class="detail-media">
-        <img id="detailImage" alt="" />
-      </div>
-      <div class="detail-side">
-        <header class="detail-head">
-          <div class="avatar" id="detailAvatar"></div>
-          <div>
-            <h2 id="detailName"></h2>
-            <p class="meta" id="detailMeta"></p>
-          </div>
-          <span class="badge" id="detailBadge"></span>
-        </header>
-        <p class="detail-desc" id="detailDesc"></p>
-        <div class="contact" id="detailContact"></div>
-        <section class="comments">
-          <h3>评论 <span id="commentCount">0</span></h3>
-          <ul id="commentList" class="comment-list"></ul>
-          <p id="commentEmpty" class="empty-mini hidden">还没有评论，来抢沙发</p>
-        </section>
-        <div id="replyBar" class="reply-bar hidden">
-          <span id="replyHint">回复</span>
-          <button type="button" id="cancelReply">取消</button>
-        </div>
-        <form id="commentForm" class="composer">
-          <input id="commentNick" type="text" maxlength="20" placeholder="昵称" required />
-          <input id="commentContent" type="text" maxlength="200" placeholder="说点好听的…" required />
-          <button type="submit" id="commentSubmit">发送</button>
-        </form>
-      </div>
-    </article>
-  </div>
-
-  <div id="publishOverlay" class="overlay hidden" role="dialog" aria-modal="true">
-    <button class="overlay-close" id="closePublish" type="button" aria-label="关闭">×</button>
-    <form id="publishForm" class="publish-sheet">
-      <h2>上传校花 / 校草</h2>
-      <label class="cover-picker">
-        <input id="avatorInput" name="avator" type="file" accept="image/*" required />
-        <img id="coverPreview" alt="" class="hidden" />
-        <span id="coverHint">点击上传照片</span>
-      </label>
-      <div class="grid-2">
-        <label>昵称<input name="name" maxlength="20" required placeholder="上墙显示的名字" /></label>
-        <label>年龄<input name="age" type="number" min="16" max="40" required placeholder="18" /></label>
-      </div>
-      <div class="grid-2">
-        <label>身份
-          <select name="sex" required>
-            <option value="0">校花</option>
-            <option value="1">校草</option>
-          </select>
-        </label>
-        <label>专业<input name="major" maxlength="30" required placeholder="例如 计算机" /></label>
-      </div>
-      <div class="grid-2">
-        <label>QQ<input name="qq" maxlength="20" placeholder="选填" /></label>
-        <label>微信<input name="wx" maxlength="40" placeholder="选填" /></label>
-      </div>
-      <label>简介<textarea name="desc" maxlength="300" placeholder="一句话介绍 TA"></textarea></label>
-      <p id="publishError" class="form-error hidden"></p>
-      <button class="btn-submit" type="submit">发布到校园墙</button>
-    </form>
-  </div>
-
-  <div id="toast" class="toast hidden"></div>
-  <script src="./js/oss-image-cache.js"></script>
-  <script src="./js/api.js"></script>
-  <script src="./js/app.js"></script>
+  <nav class="mobile-nav" aria-label="底部导航"><button class="is-active" data-view="feed"><span>⌂</span>发现</button><button data-view="draw"><span>✧</span>随机搭子</button><button id="mobilePublish"><span>＋</span>发布</button><button id="mobileProfile"><span>◉</span>我的</button></nav>
+  <div id="detailOverlay" class="overlay hidden" role="dialog" aria-modal="true"><button class="overlay-close" id="closeDetail" type="button" aria-label="关闭">×</button><article class="detail-sheet"><div class="detail-photo" id="detailPhoto"><img id="detailImage" alt="搭子动态" /></div><div class="detail-panel"><div class="detail-user"><button class="author-button" id="detailAuthor" type="button"><span class="avatar" id="detailAvatar">同</span><span><strong id="detailName">同学</strong><small id="detailMeta"></small></span></button><button class="follow-button" id="followButton" type="button">＋ 关注</button></div><span class="type-label" id="detailType"></span><p class="detail-desc" id="detailDesc"></p><div class="detail-cta"><button class="message-button" id="detailChat" type="button">↗ 和 TA 聊聊</button><span>从一次招呼开始</span></div><section class="detail-comments"><h3>一起聊聊</h3><ul id="commentList" class="comment-list"></ul><p id="commentEmpty" class="empty-mini">来做第一个打招呼的人吧</p></section><form id="commentForm" class="comment-composer"><input id="commentNick" type="text" maxlength="20" placeholder="你的昵称" /><input id="commentContent" type="text" maxlength="200" placeholder="留个友好的评论…" required /><button type="submit">发送</button></form></div></article></div>
+  <div id="publishOverlay" class="overlay hidden" role="dialog" aria-modal="true"><button class="overlay-close" id="closePublish" type="button" aria-label="关闭">×</button><form id="publishForm" class="form-sheet"><p class="eyebrow">MAKE A PLAN</p><h2>发布一条找搭子</h2><p class="form-intro">把想做的事写下来，遇见愿意同行的人。</p><label class="cover-picker"><input id="avatarInput" name="avatar" type="file" accept="image/*" /><img id="coverPreview" alt="图片预览" class="hidden" /><span id="coverHint"><b>＋</b> 添加一张照片 <small>选填，图片不超过 4MB</small></span></label><div class="post-type-field"><div class="post-type-heading"><span>搭子类型</span><small>选择你这次想一起做的事</small></div><input id="postType" name="type" type="hidden" value="0" /><div class="post-type-grid" role="group" aria-label="选择搭子类型"><button class="post-type-option is-selected" type="button" data-post-type="0" aria-pressed="true"><span class="post-type-icon study">✳</span><span class="post-type-copy"><strong>学习</strong><small>图书馆一起充电</small></span><span class="post-type-check">✓</span></button><button class="post-type-option" type="button" data-post-type="1" aria-pressed="false"><span class="post-type-icon travel">↗</span><span class="post-type-copy"><strong>旅游</strong><small>周末出发去看看</small></span><span class="post-type-check">✓</span></button><button class="post-type-option" type="button" data-post-type="2" aria-pressed="false"><span class="post-type-icon romance">♡</span><span class="post-type-copy"><strong>恋爱</strong><small>认识一个心动的人</small></span><span class="post-type-check">✓</span></button><button class="post-type-option" type="button" data-post-type="3" aria-pressed="false"><span class="post-type-icon other">＋</span><span class="post-type-copy"><strong>其他</strong><small>运动、吃饭或随便逛逛</small></span><span class="post-type-check">✓</span></button></div></div><label>你想找什么样的搭子？<textarea name="desc" maxlength="500" required placeholder="比如：周三晚图书馆复习，想找一位认真但不内卷的同学…"></textarea></label><small class="char-count"><span id="descCount">0</span> / 500</small><p id="publishError" class="form-error hidden"></p><button class="form-submit" type="submit">发布到广场 <span>→</span></button></form></div>
+  <div id="profileEditOverlay" class="overlay hidden" role="dialog" aria-modal="true"><button class="overlay-close" id="closeProfileEdit" type="button" aria-label="关闭">×</button><form id="profileEditForm" class="form-sheet profile-edit-sheet"><p class="eyebrow">YOUR PROFILE</p><h2>编辑个人资料</h2><p class="form-intro">让同校的同学更了解你，也更容易找到同频的人。</p><label>昵称<input name="name" type="text" maxlength="64" required placeholder="怎么称呼你" /></label><label>自我介绍<textarea name="description" maxlength="500" placeholder="介绍一下你自己，兴趣、日常或正在寻找的搭子…"></textarea><small class="char-count"><span id="profileDescriptionCount">0</span> / 500</small></label><label>专业<input name="major" type="text" maxlength="128" placeholder="例如：计算机科学与技术" /></label><label>性别<select name="sex"><option value="-1">未设置</option><option value="0">男</option><option value="1">女</option></select></label><p id="profileEditError" class="form-error hidden"></p><button class="form-submit" type="submit">保存资料 <span>✓</span></button></form></div>
+  <div id="authOverlay" class="overlay hidden" role="dialog" aria-modal="true"><button class="overlay-close" id="closeAuth" type="button" aria-label="关闭">×</button><section class="auth-sheet"><div class="auth-visual"><span class="auth-mark">同频</span><p>校园很大，<br />幸好我们同频。</p><span class="auth-caption">MAKE FRIENDS, MAKE PLANS</span></div><div class="auth-content"><div class="auth-tabs"><button class="is-active" data-auth="login" type="button">登录</button><button data-auth="register" type="button">注册</button></div><h2 id="authTitle">欢迎回来</h2><p class="auth-subtitle">和同校的你，一起开始新的计划。</p><form id="authForm"><label>账号<input name="loginName" type="text" autocomplete="username" required placeholder="手机号 / 邮箱 / 自定义账号" /></label><label>密码<input name="password" type="password" autocomplete="current-password" required minlength="6" placeholder="至少 6 位" /></label><div id="registerFields" class="hidden"><label>昵称<input name="name" type="text" maxlength="32" placeholder="怎么称呼你" /></label><label>专业<input name="major" type="text" maxlength="128" placeholder="例如：计算机科学与技术" /></label></div><div class="captcha-row"><label>图形验证码<input name="captchaCode" type="text" maxlength="4" required placeholder="输入图片中的字符" /></label><button id="captchaRefresh" class="captcha-image" type="button" title="点击刷新验证码"><img id="captchaImage" alt="点击刷新验证码" /><span id="captchaPlaceholder">加载验证码</span></button></div><p id="authError" class="form-error hidden"></p><button class="form-submit" type="submit" id="authSubmit">登录 <span>→</span></button></form><div class="auth-divider"><span>也可以</span></div><button id="wechatLogin" class="wechat-button" type="button"><span>◉</span> 微信一键登录</button><p class="wechat-hint">微信授权需在微信开放平台配置应用密钥</p></div></section></div>
+  <div id="inboxOverlay" class="overlay hidden" role="dialog" aria-modal="true"><button class="overlay-close" id="closeInbox" type="button" aria-label="关闭">×</button><section class="inbox-sheet"><div class="inbox-heading"><div><p class="eyebrow">YOUR MESSAGES</p><h2>收信箱</h2></div><span>和同频的人继续聊聊</span></div><div id="inboxList" class="inbox-list"></div><p id="inboxEmpty" class="empty-mini hidden">还没有聊天，去动态里认识新同学吧</p></section></div>
+  <div id="chatOverlay" class="overlay hidden" role="dialog" aria-modal="true"><button class="overlay-close" id="closeChat" type="button" aria-label="关闭">×</button><section class="chat-sheet"><header class="chat-header"><button class="avatar chat-peer-button" id="chatAvatar" type="button" aria-label="打开对方主页">同</button><div><h2 id="chatName">聊天</h2><p>发个友好的招呼吧</p></div></header><div id="chatMessages" class="chat-messages"></div><form id="chatForm" class="chat-composer"><input id="chatInput" type="text" maxlength="1000" placeholder="输入消息…" required /><button type="submit">发送</button></form></section></div>
+  <div id="listOverlay" class="overlay hidden" role="dialog" aria-modal="true"><button class="overlay-close" id="closeList" type="button" aria-label="关闭">×</button><section class="list-sheet"><h2 id="listTitle">关注</h2><div id="userList" class="user-list"></div></section></div>
+  <div id="toast" class="toast hidden"></div><script src="./js/oss-image-cache.js?v=20261013-2"></script><script src="./js/api.js?v=20261013-3"></script><script src="./js/app.js?v=20261013-5"></script>
 </body>
 </html>

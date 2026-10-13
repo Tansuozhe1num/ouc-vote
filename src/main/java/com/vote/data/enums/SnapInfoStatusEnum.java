@@ -4,7 +4,7 @@ public enum SnapInfoStatusEnum {
 
     Normal(0, "正常"),
     Deprecate(1, "删除"),
-    Banned(2, "禁用");
+    Hidden(2, "仅自己可见");
 
     private Integer status;
     private String desc;

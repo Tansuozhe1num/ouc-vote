@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vote.mappers.MessageInfoMapper">
+    <resultMap id="messageMap" type="com.vote.data.po.MessageInfo">
+        <id column="id" property="id"/><result column="sender_id" property="senderId"/><result column="receiver_id" property="receiverId"/>
+        <result column="snap_id" property="snapId"/><result column="content" property="content"/><result column="status" property="status"/>
+        <result column="ctime" property="ctime"/><result column="sender_name" property="senderName"/><result column="receiver_name" property="receiverName"/>
+    </resultMap>
+    <sql id="columns">m.id,m.sender_id,m.receiver_id,m.snap_id,m.content,m.status,m.ctime</sql>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO message(sender_id,receiver_id,snap_id,content,status,ctime) VALUES(#{senderId},#{receiverId},#{snapId},#{content},#{status},#{ctime})
+    </insert>
+    <select id="selectConversation" resultMap="messageMap">SELECT <include refid="columns"/> FROM message m
+        WHERE ((m.sender_id=#{userId} AND m.receiver_id=#{peerId}) OR (m.sender_id=#{peerId} AND m.receiver_id=#{userId})) AND m.status=0 ORDER BY m.id ASC LIMIT 100</select>
+    <select id="selectInbox" resultMap="messageMap">SELECT <include refid="columns"/> FROM message m
+        WHERE (m.sender_id=#{userId} OR m.receiver_id=#{userId}) AND m.status=0 ORDER BY m.id DESC LIMIT 100</select>
+    <select id="selectInboxConversations" resultType="com.vote.data.po.MessageConversation">
+        SELECT
+            CASE WHEN m.sender_id=#{userId} THEN m.receiver_id ELSE m.sender_id END AS peerId,
+            u.name AS peerName,
+            u.major AS peerMajor,
+            m.id AS lastMessageId,
+            m.sender_id AS lastSenderId,
+            m.snap_id AS lastSnapId,
+            m.content AS lastContent,
+            m.ctime AS lastCtime
+        FROM message m
+        JOIN `user` u ON u.user_id = CASE WHEN m.sender_id=#{userId} THEN m.receiver_id ELSE m.sender_id END
+        WHERE (m.sender_id=#{userId} OR m.receiver_id=#{userId})
+          AND m.status=0
+          AND u.status=0
+          AND NOT EXISTS (
+              SELECT 1 FROM message newer
+              WHERE newer.status=0
+                AND ((newer.sender_id=m.sender_id AND newer.receiver_id=m.receiver_id)
+                  OR (newer.sender_id=m.receiver_id AND newer.receiver_id=m.sender_id))
+                AND newer.id > m.id
+          )
+        ORDER BY m.id DESC
+        LIMIT 100
+    </select>
+    <update id="markRead">UPDATE message SET status=0 WHERE receiver_id=#{userId} AND sender_id=#{peerId}</update>
+</mapper>
