@@ -23,6 +23,50 @@
     <select id="selectByIds" resultMap="snapMap">SELECT <include refid="columns"/> <include refid="joins"/>
         WHERE s.snap_id IN <foreach collection="ids" item="id" open="(" close=")" separator=",">#{id}</foreach>
         AND s.status=0 AND u.status=0 ORDER BY FIELD(s.snap_id,<foreach collection="ids" item="id" separator=",">#{id}</foreach>)</select>
+    <select id="adminSelectList" resultMap="snapMap">
+        SELECT <include refid="columns"/> FROM snap s LEFT JOIN `user` u ON u.user_id=s.user_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (s.`desc` LIKE CONCAT('%',#{keyword},'%')
+                OR u.name LIKE CONCAT('%',#{keyword},'%')
+                OR u.major LIKE CONCAT('%',#{keyword},'%')
+                OR CAST(s.snap_id AS CHAR) LIKE CONCAT('%',#{keyword},'%'))
+            </if>
+            <if test="type != null">AND s.type=#{type}</if>
+            <if test="status != null">AND s.status=#{status}</if>
+        </where>
+        ORDER BY s.snap_id DESC LIMIT #{offset},#{limit}
+    </select>
+    <select id="adminSelectCount" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM snap s LEFT JOIN `user` u ON u.user_id=s.user_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (s.`desc` LIKE CONCAT('%',#{keyword},'%')
+                OR u.name LIKE CONCAT('%',#{keyword},'%')
+                OR u.major LIKE CONCAT('%',#{keyword},'%')
+                OR CAST(s.snap_id AS CHAR) LIKE CONCAT('%',#{keyword},'%'))
+            </if>
+            <if test="type != null">AND s.type=#{type}</if>
+            <if test="status != null">AND s.status=#{status}</if>
+        </where>
+    </select>
+    <select id="adminCountByStatus" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM snap <if test="status != null">WHERE status=#{status}</if>
+    </select>
+    <select id="adminSelectBySnapId" resultMap="snapMap">
+        SELECT <include refid="columns"/> FROM snap s LEFT JOIN `user` u ON u.user_id=s.user_id WHERE s.snap_id=#{snapId}
+    </select>
+    <update id="adminUpdate" parameterType="com.vote.data.po.SnapInfo">
+        UPDATE snap
+        <set>
+            <if test="userId != null">user_id=#{userId},</if>
+            <if test="snapImage != null">snap_image=#{snapImage},</if>
+            <if test="desc != null">`desc`=#{desc},</if>
+            <if test="type != null">type=#{type},</if>
+            <if test="status != null">status=#{status},</if>
+        </set>
+        WHERE snap_id=#{snapId}
+    </update>
     <select id="selectMaxSnapId" resultType="java.lang.Integer">SELECT COALESCE(MAX(snap_id),0) FROM snap</select>
     <update id="updateStatus">UPDATE snap SET status=#{status} WHERE snap_id=#{snapId} AND user_id=#{userId}</update>
     <select id="selectList" resultMap="snapMap">SELECT <include refid="columns"/> <include refid="joins"/> WHERE s.status=0 ORDER BY s.snap_id DESC</select>

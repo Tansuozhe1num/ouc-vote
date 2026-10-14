@@ -85,6 +85,22 @@
         WHERE c.comment_id = #{commentId}
     </select>
 
+    <select id="adminCountByStatus" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM comment_info
+        <if test="status != null">WHERE status=#{status}</if>
+    </select>
+
+    <update id="adminUpdate" parameterType="com.vote.data.po.CommentInfo">
+        UPDATE comment_info
+        <set>
+            <if test="snapId != null">snap_id=#{snapId},</if>
+            <if test="text != null">text=#{text},</if>
+            <if test="status != null">status=#{status},</if>
+            <if test="userId != null">user_id=#{userId},</if>
+        </set>
+        WHERE comment_id=#{commentId}
+    </update>
+
     <select id="selectBySnapId" resultMap="base_result_map">
         SELECT
         <include refid="base_column_list"/>

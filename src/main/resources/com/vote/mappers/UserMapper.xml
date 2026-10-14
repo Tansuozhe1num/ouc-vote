@@ -17,6 +17,48 @@
     <select id="selectByIds" resultMap="userMap">SELECT <include refid="columns"/> FROM `user` WHERE user_id IN
         <foreach collection="ids" item="item" open="(" close=")" separator=",">#{item}</foreach>
         AND status=0 ORDER BY FIELD(user_id,<foreach collection="ids" item="item" separator=",">#{item}</foreach>)</select>
+    <select id="adminSelectList" resultMap="userMap">
+        SELECT <include refid="columns"/> FROM `user`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%',#{keyword},'%')
+                OR login_name LIKE CONCAT('%',#{keyword},'%')
+                OR major LIKE CONCAT('%',#{keyword},'%')
+                OR CAST(user_id AS CHAR) LIKE CONCAT('%',#{keyword},'%'))
+            </if>
+            <if test="status != null">AND status=#{status}</if>
+        </where>
+        ORDER BY id DESC LIMIT #{offset},#{limit}
+    </select>
+    <select id="adminSelectCount" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM `user`
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%',#{keyword},'%')
+                OR login_name LIKE CONCAT('%',#{keyword},'%')
+                OR major LIKE CONCAT('%',#{keyword},'%')
+                OR CAST(user_id AS CHAR) LIKE CONCAT('%',#{keyword},'%'))
+            </if>
+            <if test="status != null">AND status=#{status}</if>
+        </where>
+    </select>
+    <select id="adminCountByStatus" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM `user`
+        <if test="status != null">WHERE status=#{status}</if>
+    </select>
+    <update id="adminUpdate" parameterType="com.vote.data.po.User">
+        UPDATE `user`
+        <set>
+            <if test="name != null">name=#{name},</if>
+            <if test="loginName != null">login_name=#{loginName},</if>
+            <if test="passwordHash != null">password_hash=#{passwordHash},</if>
+            <if test="description != null">description=#{description},</if>
+            <if test="sex != null"><choose><when test="sex == -1">sex=NULL,</when><otherwise>sex=#{sex},</otherwise></choose></if>
+            <if test="major != null">major=#{major},</if>
+            <if test="status != null">status=#{status},</if>
+        </set>
+        WHERE user_id=#{userId}
+    </update>
     <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO `user`(user_id,name,status,description,sex,ctime,major,token,refreshtoken,login_name,password_hash,wechat_openid)
         VALUES(#{userId},#{name},#{status},#{description},#{sex},#{ctime},#{major},#{token},#{refreshtoken},#{loginName},#{passwordHash},#{wechatOpenid})

@@ -13,6 +13,9 @@ public interface CommentInfoMapper<T, P> extends BaseMapper<T, P> {
 
     CommentInfo selectByCommentId(@Param("commentId") Integer commentId);
 
+    Integer adminCountByStatus(@Param("status") Integer status);
+    Integer adminUpdate(CommentInfo commentInfo);
+
     List<CommentInfo> selectByUserId(@Param("userId") String userId);
 
     Integer updateText(@Param("commentId") Integer commentId,
