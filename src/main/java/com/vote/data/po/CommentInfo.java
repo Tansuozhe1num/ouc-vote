@@ -32,7 +32,7 @@ public class CommentInfo {
     private Integer status;
 
     /**
-     * 评论者昵称 / 用户标识
+     * 评论发布时使用的账号名称（兼容历史字段名）
      */
     private String userId;
 }

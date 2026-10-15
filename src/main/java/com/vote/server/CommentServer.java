@@ -10,7 +10,7 @@ public interface CommentServer {
 
     CommentInfo getCommentById(Integer commentId);
 
-    CommentInfo saveComment(Integer snapId, String userId, String text);
+    CommentInfo saveComment(Integer snapId, String accountName, String text);
 
     CommentInfo updateComment(Integer commentId, String text);
 

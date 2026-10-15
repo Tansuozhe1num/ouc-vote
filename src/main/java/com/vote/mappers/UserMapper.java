@@ -8,6 +8,8 @@ import java.util.List;
 public interface UserMapper {
     User selectByUserId(@Param("userId") Long userId);
     User selectByLoginName(@Param("loginName") String loginName);
+
+    User selectByName(@Param("name") String name);
     User selectByWechatOpenid(@Param("openid") String openid);
     List<User> selectByIds(@Param("ids") List<Long> ids);
     List<User> adminSelectList(@Param("keyword") String keyword,

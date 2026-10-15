@@ -53,20 +53,20 @@ public class CommentServerImpl implements CommentServer {
     }
 
     @Override
-    public CommentInfo saveComment(Integer snapId, String userId, String text) {
+    public CommentInfo saveComment(Integer snapId, String accountName, String text) {
         if (snapId == null || snapId <= 0) {
             throw new BusinessException("snapId不能为空");
         }
-        if (!StringUtils.hasText(userId)) {
-            throw new BusinessException("昵称不能为空");
+        if (!StringUtils.hasText(accountName)) {
+            throw new BusinessException("账号名称不能为空");
         }
         if (!StringUtils.hasText(text)) {
             throw new BusinessException("评论内容不能为空");
         }
-        String nick = userId.trim();
+        String nick = accountName.trim();
         String content = text.trim();
-        if (nick.length() > 20) {
-            throw new BusinessException("昵称过长");
+        if (nick.length() > 64) {
+            throw new BusinessException("账号名称过长");
         }
         if (content.length() > 200) {
             throw new BusinessException("评论内容过长");

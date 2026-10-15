@@ -34,8 +34,16 @@ public class UserServerImpl implements UserServer {
     @Override
     public User register(String loginName, String password, String name, String description, Integer sex, String major) {
         if (!StringUtils.hasText(loginName) || !StringUtils.hasText(password)) throw new BusinessException("账号和密码不能为空");
-        if (password.length() < 6) throw new BusinessException("密码至少 6 位");
-        if (userMapper.selectByLoginName(loginName.trim()) != null) throw new BusinessException("账号已注册");
+        if (password.length() < 6) {
+            throw new BusinessException("密码至少 6 位");
+        }
+        if (userMapper.selectByLoginName(loginName.trim()) != null) {
+            throw new BusinessException("账号已注册");
+        }
+        User u = this.userMapper.selectByName(name);
+        if (u != null) {
+            throw new BusinessException("昵称已被使用");
+        }
         User user = User.builder().userId(idGenerator.nextId()).loginName(loginName.trim())
                 .passwordHash(hashPassword(password)).name(StringUtils.hasText(name) ? name.trim() : loginName.trim())
                 .description(description).sex(sex).major(major).status(0)

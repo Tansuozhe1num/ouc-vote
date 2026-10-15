@@ -12,6 +12,18 @@
     return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
   function typeName(type) { return types[Number(type)] || types[3]; }
+  const feedIntroCopy = {
+    "": { title: "在校园里，遇见刚好同频的人。", copy: "自习、出发、运动，下一段日常可以一起。" },
+    "0": { title: "校园里，找到一起学习的伙伴。", copy: "找一位学习伙伴，分享学习进度，查漏补缺，取长补短。" },
+    "1": { title: "说走就走。", copy: "叫上几位伙伴，来一场说走就走的旅程。" },
+    "2": { title: "心动不如行动。", copy: "发布动态或主动出击，找到心仪的 ta。" }
+  };
+  function updateFeedIntro(type) {
+    const copy = feedIntroCopy[type] || feedIntroCopy[""];
+    $("feedView").dataset.activeType = type;
+    $("feedIntroTitle").textContent = copy.title;
+    $("feedIntroCopy").textContent = copy.copy;
+  }
   function snapId(snap) { return snap.snapId || snap.id; }
   function currentUserId(user) { return user && (user.userId || user.user_id); }
   function genderLabel(sex) {
@@ -89,14 +101,16 @@
     state.user = user;
     $("loginButton").classList.toggle("hidden", !!user);
     $("userChip").classList.toggle("hidden", !user);
+    $("commentAuthor").classList.toggle("hidden", !user);
+    $("commentForm").classList.toggle("has-comment-author", !!user);
     if (user) {
       const name = user.name || "同学"; $("userNameLabel").textContent = name; $("userAvatar").textContent = firstChar(name);
-      $("commentNick").value = name; localStorage.setItem("campus-nick", name);
+      $("commentAuthor").textContent = name;
     }
   }
   async function checkSession() {
     try { applyUser(await AuthApi.me()); }
-    catch (_) { applyUser(null); $("commentNick").value = localStorage.getItem("campus-nick") || ""; }
+    catch (_) { applyUser(null); }
   }
   async function loadProfile() {
     if (!state.user) { openAuth("login"); setView("feed"); return; }
@@ -116,6 +130,7 @@
   }
   async function openDetail(id) {
     let snap = state.snaps.find((item) => String(snapId(item)) === String(id));
+    if (!snap && state.drawResult && String(snapId(state.drawResult)) === String(id)) snap = state.drawResult;
     if (!snap) { try { snap = await SnapApi.detail(id); } catch (e) { toast(e.message || "动态不存在"); return; } }
     state.currentSnap = snap;
     const authorId = snap.userId, authorName = snap.userName || snap.name || "同学";
@@ -146,7 +161,7 @@
   }
   async function runDraw() {
     if (!state.user) { openAuth("login"); return; }
-    const button = $("drawButton"), card = $("drawCard"); button.disabled = true; $("drawButtonLabel").textContent = "缘分正在靠近"; card.classList.add("is-drawing"); card.classList.remove("is-ready");
+    const button = $("drawButton"), card = $("drawCard"); state.drawResult = null; button.disabled = true; $("drawChat").disabled = true; $("drawButtonLabel").textContent = "缘分正在靠近"; card.classList.add("is-drawing"); card.classList.remove("is-ready"); card.removeAttribute("title");
     try {
       const result = await SnapApi.draw(); state.drawResult = result;
       $("drawType").textContent = typeName(result.type); $("drawTitle").textContent = result.desc || "正在寻找同频的你";
@@ -154,7 +169,7 @@
       const name = result.userName || "同学"; $("drawName").textContent = name; $("drawMajor").textContent = result.major || "校园同学"; $("drawAvatar").textContent = firstChar(name);
       $("drawCardArt").classList.add("ready"); $("drawCardArt").innerHTML = "✦"; $("drawChat").disabled = false;
       if (result.snapImage) { $("drawCardArt").innerHTML = `<img src="${escapeHtml(OssImageCache.lookup(result.snapImage))}" data-oss="${escapeHtml(result.snapImage)}" alt="" style="width:100%;height:100%;object-fit:cover" />`; OssImageCache.hydrate($("drawCardArt")); }
-      card.classList.remove("is-drawing"); card.classList.add("is-ready");
+      card.classList.remove("is-drawing"); card.classList.add("is-ready"); card.title = "查看这条动态的内容和评论";
     } catch (e) { card.classList.remove("is-drawing"); toast(e.message || "抽取失敗"); }
     finally { button.disabled = false; $("drawButtonLabel").textContent = "再抽一位搭子"; }
   }
@@ -184,10 +199,18 @@
 
   masonry.addEventListener("click", (event) => { const card = event.target.closest(".snap-card"); if (card) openDetail(card.dataset.id); });
   $("mySnaps").addEventListener("click", (event) => { const card = event.target.closest(".snap-card"); if (card) openDetail(card.dataset.id); });
+  $("drawCard").addEventListener("click", (event) => {
+    if (event.target.closest("#drawChat") || !state.drawResult || $("drawCard").classList.contains("is-drawing")) return;
+    openDetail(snapId(state.drawResult));
+  });
   document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => setView(button.dataset.view)));
   document.querySelectorAll("[data-type]").forEach((button) => button.addEventListener("click", () => {
-    document.querySelectorAll("[data-type]").forEach((item) => item.classList.toggle("is-active", item === button));
-    state.type = button.dataset.type; resetFeed();
+    document.querySelectorAll("[data-type]").forEach((item) => {
+      const selected = item === button;
+      item.classList.toggle("is-active", selected);
+      item.setAttribute("aria-pressed", selected ? "true" : "false");
+    });
+    state.type = button.dataset.type; updateFeedIntro(state.type); resetFeed();
   }));
   let searchTimer;
   searchInput.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.keyword = searchInput.value; renderFeed(); }, 160); });
@@ -302,14 +325,14 @@
     try {
       await SnapApi.save(data, state.publishRequestId);
       state.publishRequestId = newRequestId();
-      form.reset(); document.querySelectorAll("[data-post-type]").forEach((option) => { const selected = option.dataset.postType === "0"; option.classList.toggle("is-selected", selected); option.setAttribute("aria-pressed", selected ? "true" : "false"); }); $("postType").value = "0"; $("coverPreview").classList.add("hidden"); $("coverHint").classList.remove("hidden"); $("descCount").textContent = "0"; hideOverlay("publishOverlay"); state.type = ""; document.querySelectorAll("[data-type]").forEach((button) => button.classList.toggle("is-active", button.dataset.type === "")); resetFeed(); toast("动态发布成功");
+      form.reset(); document.querySelectorAll("[data-post-type]").forEach((option) => { const selected = option.dataset.postType === "0"; option.classList.toggle("is-selected", selected); option.setAttribute("aria-pressed", selected ? "true" : "false"); }); $("postType").value = "0"; $("coverPreview").classList.add("hidden"); $("coverHint").classList.remove("hidden"); $("descCount").textContent = "0"; hideOverlay("publishOverlay"); state.type = ""; updateFeedIntro(state.type); document.querySelectorAll("[data-type]").forEach((button) => { const selected = button.dataset.type === ""; button.classList.toggle("is-active", selected); button.setAttribute("aria-pressed", selected ? "true" : "false"); }); resetFeed(); toast("动态发布成功");
     } catch (e) { error.textContent = e.message || "发布失败"; error.classList.remove("hidden"); }
     finally { state.publishing = false; button.disabled = false; button.innerHTML = button.dataset.originalText || "发布到广场 <span>→</span>"; }
   });
   $("commentForm").addEventListener("submit", async (event) => {
     event.preventDefault(); if (!state.currentSnap) return;
-    const name = state.user ? state.user.name : $("commentNick").value.trim(); if (!name) { toast("请先登录后留言"); openAuth("login"); return; }
-    try { await CommentApi.save(snapId(state.currentSnap), name, $("commentContent").value.trim()); $("commentContent").value = ""; renderComments(await loadSnapComments(snapId(state.currentSnap))); }
+    if (!state.user) { toast("请先登录后留言"); openAuth("login"); return; }
+    try { await CommentApi.save(snapId(state.currentSnap), $("commentContent").value.trim()); $("commentContent").value = ""; renderComments(await loadSnapComments(snapId(state.currentSnap))); }
     catch (e) { toast(e.message || "评论失败"); }
   });
   $("chatForm").addEventListener("submit", async (event) => {

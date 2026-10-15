@@ -55,7 +55,7 @@ const CommentApi = {
     const data = await request(`/comment/list?snapId=${encodeURIComponent(snapId)}&page=1&size=50`);
     return (Array.isArray(data) ? data : []).map((c) => ({ commentId: c.commentId, nickname: c.userId || c.nickname || "同学", content: c.text || c.content || "", ctime: c.ctime }));
   },
-  save(snapId, nickname, content) { return postForm("/comment/save", { snapId, nickname, content }); }
+  save(snapId, content) { return postForm("/comment/save", { snapId, content }); }
 };
 
 async function loadSnapComments(snapId) { return CommentApi.list(snapId); }

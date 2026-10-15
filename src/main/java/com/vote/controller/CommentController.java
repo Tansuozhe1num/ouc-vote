@@ -1,13 +1,17 @@
 package com.vote.controller;
 
+import com.vote.auth.AuthContext;
 import com.vote.data.po.CommentInfo;
+import com.vote.data.po.User;
 import com.vote.data.vo.ResponseVO;
 import com.vote.server.CommentServer;
+import com.vote.server.UserServer;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -17,6 +21,9 @@ public class CommentController extends ABaseController {
 
     @Resource
     private CommentServer commentServer;
+
+    @Resource
+    private UserServer userServer;
 
     /**
      * 按 snap 分页查询评论
@@ -41,14 +48,14 @@ public class CommentController extends ABaseController {
     }
 
     /**
-     * 发表评论。兼容前端 nickname/content 与后端 userId/text 两套参数名。
+     * 发表评论。评论身份从当前登录用户读取，忽略客户端传入的昵称。
      */
     @RequestMapping("/save")
-    public ResponseVO saveComment(@NotNull Integer snapId, String nickname, String userId,
-                                  String content, String text) {
-        String nick = StringUtils.hasText(nickname) ? nickname : userId;
+    public ResponseVO saveComment(@NotNull Integer snapId, String content, String text,
+                                  HttpServletRequest request) {
+        User user = userServer.getUser(AuthContext.requireUserId(request));
         String body = StringUtils.hasText(content) ? content : text;
-        CommentInfo saved = this.commentServer.saveComment(snapId, nick, body);
+        CommentInfo saved = this.commentServer.saveComment(snapId, user.getName(), body);
         return getSuccessResponseVO(saved);
     }
 
