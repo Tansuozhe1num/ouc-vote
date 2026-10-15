@@ -19,6 +19,7 @@ public class FollowServerImpl implements FollowServer {
 
     @Override
     public boolean toggle(Long userId, Long targetUserId) {
+        if (userId == null || targetUserId == null) throw new BusinessException("用户无效");
         if (userId.equals(targetUserId)) throw new BusinessException("不能关注自己");
         User target = userMapper.selectByUserId(targetUserId);
         if (target == null || target.getStatus() == null || target.getStatus() != 0) throw new BusinessException("用户不存在");
@@ -35,6 +36,7 @@ public class FollowServerImpl implements FollowServer {
 
     @Override
     public boolean isFollowing(Long userId, Long targetUserId) {
+        if (userId == null || targetUserId == null) return false;
         Integer status = followMapper.selectStatus(targetUserId, userId);
         return status != null && status == 0;
     }

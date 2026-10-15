@@ -43,10 +43,17 @@ CREATE TABLE IF NOT EXISTS message (
     status TINYINT NOT NULL DEFAULT 0 COMMENT '0 normal, 1 deleted',
     ctime INT NOT NULL,
     PRIMARY KEY (id),
-    KEY idx_message_sender (sender_id, receiver_id, id),
-    KEY idx_message_receiver (receiver_id, sender_id, id),
+    KEY idx_message_sender (sender_id, status, receiver_id, id),
+    KEY idx_message_receiver (receiver_id, status, sender_id, id),
     KEY idx_message_snap (snap_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='direct messages';
+
+-- Keep existing installations on the same query-friendly message indexes.
+ALTER TABLE message
+    DROP INDEX idx_message_sender,
+    DROP INDEX idx_message_receiver,
+    ADD KEY idx_message_sender (sender_id, status, receiver_id, id),
+    ADD KEY idx_message_receiver (receiver_id, status, sender_id, id);
 
 ALTER TABLE `user` MODIFY sex TINYINT DEFAULT NULL COMMENT '0 male, 1 female, NULL unset';
 

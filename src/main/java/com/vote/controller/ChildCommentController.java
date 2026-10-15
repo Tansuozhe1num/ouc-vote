@@ -1,5 +1,6 @@
 package com.vote.controller;
 
+import com.vote.auth.AuthContext;
 import com.vote.data.po.ChildCommentInfo;
 import com.vote.data.vo.ResponseVO;
 import com.vote.server.ChildCommentServer;
@@ -42,18 +43,16 @@ public class ChildCommentController extends ABaseController {
     }
 
     /**
-     * 发表子评论。兼容 nickname/content 与 userId/text。
+     * 发表子评论。评论身份从当前登录用户读取，忽略客户端传入的昵称。
      */
     @RequestMapping("/save")
     public ResponseVO saveChildComment(@NotNull Integer snapId,
                                        @NotNull Integer parentId,
-                                       String nickname,
-                                       String userId,
                                        String content,
-                                       String text) {
-        String nick = StringUtils.hasText(nickname) ? nickname : userId;
+                                       String text,
+                                       javax.servlet.http.HttpServletRequest request) {
         String body = StringUtils.hasText(content) ? content : text;
-        ChildCommentInfo saved = this.childCommentServer.saveChildComment(snapId, parentId, nick, body);
+        ChildCommentInfo saved = this.childCommentServer.saveChildComment(snapId, parentId, AuthContext.requireUserId(request), body);
         return getSuccessResponseVO(saved);
     }
 

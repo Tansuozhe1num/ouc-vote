@@ -13,4 +13,6 @@ public interface SnapServer {
     SnapInfo saveSnapInfo(Long userId, MultipartFile avatar, String desc, Integer type, String idempotencyKey);
 
     List<SnapInfo> getMySnapInfoList(Long userId, Integer page, Integer size);
+
+    boolean updateStatus(Long userId, Integer snapId, Integer status);
 }

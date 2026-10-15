@@ -19,6 +19,10 @@ import java.util.List;
 @Service
 public class CommentServerImpl implements CommentServer {
 
+    private static final int DEFAULT_PAGE_SIZE = 20;
+    private static final int MAX_PAGE_SIZE = 50;
+    private static final int MAX_PAGE_NUMBER = 100000;
+
     @Resource
     private CommentInfoMapper<CommentInfo, CommentInfoQuery> commentInfoMapper;
 
@@ -30,12 +34,8 @@ public class CommentServerImpl implements CommentServer {
         if (snapId == null || snapId <= 0) {
             throw new BusinessException("snapId不能为空");
         }
-        if (page == null || page <= 0) {
-            page = 1;
-        }
-        if (size == null || size <= 0 || size > 50) {
-            size = 20;
-        }
+        page = page == null || page < 1 ? 1 : Math.min(page, MAX_PAGE_NUMBER);
+        size = size == null || size < 1 || size > MAX_PAGE_SIZE ? DEFAULT_PAGE_SIZE : size;
         int offset = (page - 1) * size;
         return this.commentInfoMapper.selectBySnapId(snapId, size, offset);
     }
@@ -53,21 +53,17 @@ public class CommentServerImpl implements CommentServer {
     }
 
     @Override
-    public CommentInfo saveComment(Integer snapId, String accountName, String text) {
+    public CommentInfo saveComment(Integer snapId, Long userId, String text) {
         if (snapId == null || snapId <= 0) {
             throw new BusinessException("snapId不能为空");
         }
-        if (!StringUtils.hasText(accountName)) {
-            throw new BusinessException("账号名称不能为空");
+        if (userId == null || userId <= 0) {
+            throw new BusinessException("评论用户不能为空");
         }
         if (!StringUtils.hasText(text)) {
             throw new BusinessException("评论内容不能为空");
         }
-        String nick = accountName.trim();
         String content = text.trim();
-        if (nick.length() > 64) {
-            throw new BusinessException("账号名称过长");
-        }
         if (content.length() > 200) {
             throw new BusinessException("评论内容过长");
         }
@@ -79,7 +75,7 @@ public class CommentServerImpl implements CommentServer {
 
         CommentInfo commentInfo = CommentInfo.builder()
                 .snapId(snapId)
-                .userId(nick)
+                .userId(String.valueOf(userId))
                 .text(content)
                 .ctime(new Date())
                 .status(CommentStatusEnum.Normal.getStatus())

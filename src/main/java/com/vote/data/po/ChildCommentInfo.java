@@ -37,4 +37,6 @@ public class ChildCommentInfo {
     private Integer status;
 
     private String userId;
+
+    private String userName;
 }

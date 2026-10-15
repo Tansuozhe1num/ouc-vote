@@ -2,10 +2,8 @@ package com.vote.controller;
 
 import com.vote.auth.AuthContext;
 import com.vote.data.po.CommentInfo;
-import com.vote.data.po.User;
 import com.vote.data.vo.ResponseVO;
 import com.vote.server.CommentServer;
-import com.vote.server.UserServer;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,9 +19,6 @@ public class CommentController extends ABaseController {
 
     @Resource
     private CommentServer commentServer;
-
-    @Resource
-    private UserServer userServer;
 
     /**
      * 按 snap 分页查询评论
@@ -53,9 +48,8 @@ public class CommentController extends ABaseController {
     @RequestMapping("/save")
     public ResponseVO saveComment(@NotNull Integer snapId, String content, String text,
                                   HttpServletRequest request) {
-        User user = userServer.getUser(AuthContext.requireUserId(request));
         String body = StringUtils.hasText(content) ? content : text;
-        CommentInfo saved = this.commentServer.saveComment(snapId, user.getName(), body);
+        CommentInfo saved = this.commentServer.saveComment(snapId, AuthContext.requireUserId(request), body);
         return getSuccessResponseVO(saved);
     }
 

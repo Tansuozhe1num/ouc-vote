@@ -5,7 +5,6 @@ import com.vote.data.po.SnapInfo;
 import com.vote.data.vo.ResponseVO;
 import com.vote.server.MatchServer;
 import com.vote.server.SnapServer;
-import com.vote.server.impl.SnapServerImpl;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,7 +23,6 @@ import org.springframework.util.StringUtils;
 @RequestMapping("/snap")
 public class SnapController extends ABaseController {
     @Resource private SnapServer snapServer;
-    @Resource private SnapServerImpl snapServerImpl;
     @Resource private MatchServer matchServer;
 
     @GetMapping("/list")
@@ -55,7 +53,7 @@ public class SnapController extends ABaseController {
 
     @PostMapping("/status")
     public ResponseVO status(@RequestParam Integer snapId, @RequestParam Integer status, HttpServletRequest request) {
-        return getSuccessResponseVO(snapServerImpl.updateStatus(AuthContext.requireUserId(request), snapId, status));
+        return getSuccessResponseVO(snapServer.updateStatus(AuthContext.requireUserId(request), snapId, status));
     }
 
     @GetMapping("/draw")

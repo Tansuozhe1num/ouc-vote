@@ -14,13 +14,13 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class SnapServerImpl implements SnapServer {
+    private static final int MAX_PAGE_NUMBER = 100000;
     private static final String IDEMPOTENCY_PREFIX = "vote:SnapSaveIdempotency:";
     private static final String PROCESSING = "PROCESSING";
     private static final long IDEMPOTENCY_TTL_MINUTES = 10L;
@@ -93,15 +93,10 @@ public class SnapServerImpl implements SnapServer {
     @Override
     public List<SnapInfo> getMySnapInfoList(Long userId, Integer page, Integer size) {
         if (page == null || page < 1) page = 1;
+        else page = Math.min(page, MAX_PAGE_NUMBER);
         if (size == null || size < 1 || size > 50) size = 30;
         return snapInfoMapper.selectMine(userId, size, (page - 1) * size);
     }
-
-    public List<SnapInfo> getByIds(List<Integer> ids) {
-        return ids == null || ids.isEmpty() ? Collections.emptyList() : snapInfoMapper.selectByIds(ids);
-    }
-
-    public Integer maxId() { return snapInfoMapper.selectMaxSnapId(); }
 
     public boolean updateStatus(Long userId, Integer snapId, Integer status) {
         if (status == null || status < 0 || status > 2) throw new BusinessException("状态值无效");

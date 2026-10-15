@@ -22,7 +22,6 @@ public class AGlobalExceptionHandlerController extends ABaseController {
 
     @ExceptionHandler(value = Exception.class)
     Object handleException(Exception e, HttpServletRequest request) {
-        logger.error("请求错误，请求地址{},错误信息:", request.getRequestURL(), e);
         ResponseVO ajaxResponse = new ResponseVO();
         //404
         if (e instanceof NoHandlerFoundException) {
@@ -32,6 +31,7 @@ public class AGlobalExceptionHandlerController extends ABaseController {
         } else if (e instanceof BusinessException) {
             //业务错误
             BusinessException biz = (BusinessException) e;
+            logger.warn("业务请求失败，地址={},原因={}", request.getRequestURL(), biz.getMessage());
             ajaxResponse.setCode(biz.getCode() == null ? ResponseCodeEnum.CODE_600.getCode() : biz.getCode());
             ajaxResponse.setInfo(biz.getMessage());
             ajaxResponse.setStatus(STATUC_ERROR);
@@ -46,6 +46,7 @@ public class AGlobalExceptionHandlerController extends ABaseController {
             ajaxResponse.setInfo(ResponseCodeEnum.CODE_601.getMsg());
             ajaxResponse.setStatus(STATUC_ERROR);
         } else {
+            logger.error("请求错误，请求地址={},错误信息:", request.getRequestURL(), e);
             ajaxResponse.setCode(ResponseCodeEnum.CODE_500.getCode());
             ajaxResponse.setInfo(ResponseCodeEnum.CODE_500.getMsg());
             ajaxResponse.setStatus(STATUC_ERROR);

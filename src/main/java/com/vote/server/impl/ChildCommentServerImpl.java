@@ -22,6 +22,10 @@ import java.util.List;
 @Service
 public class ChildCommentServerImpl implements ChildCommentServer {
 
+    private static final int DEFAULT_PAGE_SIZE = 20;
+    private static final int MAX_PAGE_SIZE = 50;
+    private static final int MAX_PAGE_NUMBER = 100000;
+
     @Resource
     private ChildCommentInfoMapper<ChildCommentInfo, ChildCommentInfoQuery> childCommentInfoMapper;
 
@@ -62,25 +66,21 @@ public class ChildCommentServerImpl implements ChildCommentServer {
     }
 
     @Override
-    public ChildCommentInfo saveChildComment(Integer snapId, Integer parentId, String userId, String text) {
+    public ChildCommentInfo saveChildComment(Integer snapId, Integer parentId, Long userId, String text) {
         if (snapId == null || snapId <= 0) {
             throw new BusinessException("snapId不能为空");
         }
         if (parentId == null || parentId <= 0) {
             throw new BusinessException("parentId不能为空");
         }
-        if (!StringUtils.hasText(userId)) {
-            throw new BusinessException("昵称不能为空");
+        if (userId == null || userId <= 0) {
+            throw new BusinessException("评论用户不能为空");
         }
         if (!StringUtils.hasText(text)) {
             throw new BusinessException("评论内容不能为空");
         }
 
-        String nick = userId.trim();
         String content = text.trim();
-        if (nick.length() > 20) {
-            throw new BusinessException("昵称过长");
-        }
         if (content.length() > 200) {
             throw new BusinessException("评论内容过长");
         }
@@ -101,7 +101,7 @@ public class ChildCommentServerImpl implements ChildCommentServer {
         ChildCommentInfo child = ChildCommentInfo.builder()
                 .snapId(snapId)
                 .parentId(parentId)
-                .userId(nick)
+                .userId(String.valueOf(userId))
                 .text(content)
                 .ctime(new Date())
                 .status(CommentStatusEnum.Normal.getStatus())
@@ -144,12 +144,8 @@ public class ChildCommentServerImpl implements ChildCommentServer {
      * @return int[]{offset, size}
      */
     private int[] normalizePage(Integer page, Integer size) {
-        if (page == null || page <= 0) {
-            page = 1;
-        }
-        if (size == null || size <= 0 || size > 50) {
-            size = 20;
-        }
+        page = page == null || page < 1 ? 1 : Math.min(page, MAX_PAGE_NUMBER);
+        size = size == null || size < 1 || size > MAX_PAGE_SIZE ? DEFAULT_PAGE_SIZE : size;
         return new int[]{(page - 1) * size, size};
     }
 }

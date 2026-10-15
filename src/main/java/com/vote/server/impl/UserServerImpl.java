@@ -23,6 +23,9 @@ import javax.crypto.spec.PBEKeySpec;
 
 @Service
 public class UserServerImpl implements UserServer {
+    private static final int MAX_NAME_LENGTH = 64;
+    private static final int MAX_DESCRIPTION_LENGTH = 500;
+    private static final int MAX_MAJOR_LENGTH = 128;
     @Resource private UserMapper userMapper;
     @Resource private SnowflakeIdGenerator idGenerator;
     @Resource private JwtService jwtService;
@@ -30,23 +33,30 @@ public class UserServerImpl implements UserServer {
     @Value("${campus.wechat.app-secret:}") private String wechatAppSecret;
 
     private final SecureRandom secureRandom = new SecureRandom();
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
     public User register(String loginName, String password, String name, String description, Integer sex, String major) {
         if (!StringUtils.hasText(loginName) || !StringUtils.hasText(password)) throw new BusinessException("账号和密码不能为空");
+        loginName = loginName.trim();
         if (password.length() < 6) {
             throw new BusinessException("密码至少 6 位");
         }
-        if (userMapper.selectByLoginName(loginName.trim()) != null) {
+        if (loginName.length() > MAX_NAME_LENGTH) throw new BusinessException("账号不能超过 64 个字符");
+        if (userMapper.selectByLoginName(loginName) != null) {
             throw new BusinessException("账号已注册");
         }
+        name = StringUtils.hasText(name) ? name.trim() : loginName;
+        description = normalizeOptional(description, MAX_DESCRIPTION_LENGTH, "个人简介不能超过 500 个字符");
+        major = normalizeOptional(major, MAX_MAJOR_LENGTH, "专业不能超过 128 个字符");
         User u = this.userMapper.selectByName(name);
         if (u != null) {
             throw new BusinessException("昵称已被使用");
         }
-        User user = User.builder().userId(idGenerator.nextId()).loginName(loginName.trim())
-                .passwordHash(hashPassword(password)).name(StringUtils.hasText(name) ? name.trim() : loginName.trim())
-                .description(description).sex(sex).major(major).status(0)
+        if (name.length() > MAX_NAME_LENGTH) throw new BusinessException("昵称不能超过 64 个字符");
+        User user = User.builder().userId(idGenerator.nextId()).loginName(loginName)
+                .passwordHash(hashPassword(password)).name(name)
+                .description(description).sex(validateSex(sex)).major(major).status(0)
                 .ctime((int) (System.currentTimeMillis() / 1000)).build();
         userMapper.insert(user);
         return createSession(user);
@@ -92,12 +102,30 @@ public class UserServerImpl implements UserServer {
     public User updateProfile(Long userId, String name, String description, Integer sex, String major) {
         User user = require(userId);
         if (sex != null && sex != -1 && sex != 0 && sex != 1) throw new BusinessException("性别选项无效");
-        if (StringUtils.hasText(name)) user.setName(name.trim());
-        if (description != null) user.setDescription(description.length() > 500 ? description.substring(0, 500) : description);
+        if (StringUtils.hasText(name)) {
+            String normalizedName = name.trim();
+            if (normalizedName.length() > MAX_NAME_LENGTH) throw new BusinessException("昵称不能超过 64 个字符");
+            User sameName = userMapper.selectByName(normalizedName);
+            if (sameName != null && !userId.equals(sameName.getUserId())) throw new BusinessException("昵称已被使用");
+            user.setName(normalizedName);
+        }
+        if (description != null) user.setDescription(normalizeOptional(description, MAX_DESCRIPTION_LENGTH, "个人简介不能超过 500 个字符"));
         if (sex != null) user.setSex(sex == -1 ? null : sex);
-        if (major != null) user.setMajor(major);
+        if (major != null) user.setMajor(normalizeOptional(major, MAX_MAJOR_LENGTH, "专业不能超过 128 个字符"));
         userMapper.updateProfile(user);
         return user;
+    }
+
+    private Integer validateSex(Integer sex) {
+        if (sex != null && sex != -1 && sex != 0 && sex != 1) throw new BusinessException("性别选项无效");
+        return sex == null || sex == -1 ? null : sex;
+    }
+
+    private String normalizeOptional(String value, int maxLength, String message) {
+        if (value == null) return null;
+        String normalized = value.trim();
+        if (normalized.length() > maxLength) throw new BusinessException(message);
+        return normalized;
     }
 
     private User require(Long userId) {
@@ -122,7 +150,7 @@ public class UserServerImpl implements UserServer {
         try {
             String url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=" + wechatAppId
                     + "&secret=" + wechatAppSecret + "&code=" + code + "&grant_type=authorization_code";
-            String body = new RestTemplate().getForObject(url, String.class);
+            String body = restTemplate.getForObject(url, String.class);
             JSONObject json = JSON.parseObject(body);
             return json == null ? null : json.getString("openid");
         } catch (Exception e) {

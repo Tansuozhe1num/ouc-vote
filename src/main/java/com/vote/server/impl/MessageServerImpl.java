@@ -35,6 +35,7 @@ public class MessageServerImpl implements MessageServer {
             if (snap == null || !receiverId.equals(snap.getUserId())) throw new BusinessException("搭子动态不存在");
         }
         if (!StringUtils.hasText(content)) throw new BusinessException("消息不能为空");
+        content = content.trim();
         if (content.length() > 1000) content = content.substring(0, 1000);
         MessageInfo message = MessageInfo.builder().senderId(senderId).receiverId(receiverId).snapId(snapId)
                 .content(content.trim()).status(0).ctime((int) (System.currentTimeMillis() / 1000)).build();

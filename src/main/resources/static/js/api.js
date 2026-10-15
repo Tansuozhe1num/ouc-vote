@@ -25,7 +25,7 @@ const AuthApi = {
 };
 
 const SnapApi = {
-  list(page, size, type) { const filter = type === "" || type == null ? "" : `&type=${encodeURIComponent(type)}`; return request(`/snap/list?page=${page}&size=${size}${filter}`); },
+  list(page, size, type, options) { const filter = type === "" || type == null ? "" : `&type=${encodeURIComponent(type)}`; return request(`/snap/list?page=${page}&size=${size}${filter}`, options); },
   detail(snapId) { return request(`/snap/detail?snapId=${encodeURIComponent(snapId)}`); },
   mine(page, size) { return request(`/snap/mine?page=${page}&size=${size}`); },
   save(formData, idempotencyKey) {
@@ -53,7 +53,13 @@ const MessageApi = {
 const CommentApi = {
   async list(snapId) {
     const data = await request(`/comment/list?snapId=${encodeURIComponent(snapId)}&page=1&size=50`);
-    return (Array.isArray(data) ? data : []).map((c) => ({ commentId: c.commentId, nickname: c.userId || c.nickname || "同学", content: c.text || c.content || "", ctime: c.ctime }));
+    return (Array.isArray(data) ? data : []).map((c) => ({
+      commentId: c.commentId,
+      authorId: c.userId || c.authorId || "",
+      nickname: c.userName || c.nickname || c.userId || "同学",
+      content: c.text || c.content || "",
+      ctime: c.ctime
+    }));
   },
   save(snapId, content) { return postForm("/comment/save", { snapId, content }); }
 };

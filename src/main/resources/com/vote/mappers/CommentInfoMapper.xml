@@ -11,6 +11,7 @@
         <result column="ctime" property="ctime"/>
         <result column="status" property="status"/>
         <result column="user_id" property="userId"/>
+        <result column="user_name" property="userName"/>
     </resultMap>
 
     <sql id="base_column_list">
@@ -19,7 +20,8 @@
         c.text,
         c.ctime,
         c.status,
-        c.user_id
+        c.user_id,
+        u.name AS user_name
     </sql>
 
     <sql id="base_condition_field">
@@ -63,10 +65,12 @@
         SELECT
         <include refid="base_column_list"/>
         FROM comment_info c
+        LEFT JOIN `user` u ON u.user_id = CAST(c.user_id AS UNSIGNED)
         <include refid="query_condition"/>
-        <if test="query.orderBy != null and query.orderBy != ''">
-            ORDER BY ${query.orderBy}
-        </if>
+        <choose>
+            <when test="query.orderBy == 'c.comment_id ASC'">ORDER BY c.comment_id ASC</when>
+            <otherwise>ORDER BY c.comment_id DESC</otherwise>
+        </choose>
         <if test="query.simplePage != null">
             LIMIT #{query.simplePage.start}, #{query.simplePage.end}
         </if>
@@ -75,6 +79,7 @@
     <select id="selectCount" resultType="java.lang.Integer">
         SELECT COUNT(1)
         FROM comment_info c
+        LEFT JOIN `user` u ON u.user_id = CAST(c.user_id AS UNSIGNED)
         <include refid="query_condition"/>
     </select>
 
@@ -82,6 +87,7 @@
         SELECT
         <include refid="base_column_list"/>
         FROM comment_info c
+        LEFT JOIN `user` u ON u.user_id = CAST(c.user_id AS UNSIGNED)
         WHERE c.comment_id = #{commentId}
     </select>
 
@@ -105,6 +111,7 @@
         SELECT
         <include refid="base_column_list"/>
         FROM comment_info c
+        LEFT JOIN `user` u ON u.user_id = CAST(c.user_id AS UNSIGNED)
         WHERE c.snap_id = #{snapId}
           AND c.status = 0
         ORDER BY c.comment_id DESC
@@ -115,6 +122,7 @@
         SELECT
         <include refid="base_column_list"/>
         FROM comment_info c
+        LEFT JOIN `user` u ON u.user_id = CAST(c.user_id AS UNSIGNED)
         WHERE c.user_id = #{userId}
           AND c.status = 0
         ORDER BY c.comment_id DESC

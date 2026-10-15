@@ -12,7 +12,7 @@ public interface ChildCommentServer {
 
     ChildCommentInfo getChildCommentById(Integer cId);
 
-    ChildCommentInfo saveChildComment(Integer snapId, Integer parentId, String userId, String text);
+    ChildCommentInfo saveChildComment(Integer snapId, Integer parentId, Long userId, String text);
 
     ChildCommentInfo updateChildComment(Integer cId, String text);
 
