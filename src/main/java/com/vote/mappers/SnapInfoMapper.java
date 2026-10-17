@@ -26,5 +26,12 @@ public interface SnapInfoMapper<T, P> extends BaseMapper<T, P> {
     List<SnapInfo> selectMine(@Param("userId") Long userId, @Param("limit") Integer limit, @Param("offset") Integer offset);
     Integer updateStatus(@Param("snapId") Integer snapId, @Param("userId") Long userId, @Param("status") Integer status);
 
+    Integer addScore(@Param("snapId") Integer snapId, @Param("delta") Integer delta);
+    Integer decreaseAgedScores(@Param("cutoff") Long cutoff, @Param("delta") Integer delta);
+    List<SnapInfo> selectAgedActiveSnaps(@Param("cutoff") Long cutoff,
+                                         @Param("lastCtime") Long lastCtime,
+                                         @Param("lastSnapId") Integer lastSnapId,
+                                         @Param("limit") Integer limit);
+
     SnapInfo selectBySnapId(@Param("snapId") Integer snapId);
 }

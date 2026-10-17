@@ -2,7 +2,7 @@
   "use strict";
 
   const API = "/admin/api";
-  const TYPE_NAMES = ["学习", "旅游", "恋爱", "其他"];
+  const TYPE_NAMES = ["学习", "旅游", "恋爱", "其他", "游戏"];
   const state = {
     key: localStorage.getItem("campus-admin-key") || "",
     section: "overview",
@@ -103,7 +103,7 @@
     body.innerHTML = items.map((snap) => `<tr>
       <td class="id-col">#${esc(snap.snapId)}</td><td class="desc-cell" title="${esc(snap.desc)}">${esc(snap.desc || "—")}</td>
       <td><div class="user-cell"><span class="avatar">${esc(initials(snap.userName))}</span><span><strong>${esc(snap.userName || "未知用户")}</strong><small>ID ${esc(snap.userId)}</small></span></div></td>
-      <td><span class="type-tag">${esc(typeName(snap.type))}</span></td><td>${statusTag(snap.status, "snap")}</td><td class="muted-cell">${formatDate(snap.ctime)}</td>
+      <td><span class="type-tag">${esc(typeName(snap.type))}</span></td><td>${statusTag(snap.status, "snap")}</td><td>${esc(snap.score == null ? 100 : snap.score)}</td><td class="muted-cell">${formatDate(snap.ctime)}</td>
       <td class="action-col"><div class="row-actions"><button class="row-action" data-edit="snaps" data-id="${esc(snap.snapId)}">编辑</button><button class="row-action danger" data-delete="snaps" data-id="${esc(snap.snapId)}">删除</button></div></td>
     </tr>`).join("");
     renderPagination("snapsPagination", result, "snaps"); state.snaps = items;
@@ -180,8 +180,9 @@
     if (entity === "snaps") return `<div class="field-grid">
       ${item ? `<input type="hidden" name="snapId" value="${esc(item.snapId)}" />` : ""}
       <label>作者用户 ID<input name="userId" value="${esc(item && item.userId)}" required placeholder="输入用户 ID" /></label>
-      <label>类型<select name="type"><option value="0" ${!item || Number(item.type) === 0 ? "selected" : ""}>学习</option><option value="1" ${item && Number(item.type) === 1 ? "selected" : ""}>旅游</option><option value="2" ${item && Number(item.type) === 2 ? "selected" : ""}>恋爱</option><option value="3" ${item && Number(item.type) === 3 ? "selected" : ""}>其他</option></select></label>
+      <label>类型<select name="type"><option value="0" ${!item || Number(item.type) === 0 ? "selected" : ""}>学习</option><option value="1" ${item && Number(item.type) === 1 ? "selected" : ""}>旅游</option><option value="2" ${item && Number(item.type) === 2 ? "selected" : ""}>恋爱</option><option value="3" ${item && Number(item.type) === 3 ? "selected" : ""}>其他</option><option value="4" ${item && Number(item.type) === 4 ? "selected" : ""}>游戏</option></select></label>
       <label>状态<select name="status"><option value="0" ${!item || Number(item.status) === 0 ? "selected" : ""}>公开</option><option value="1" ${item && Number(item.status) === 1 ? "selected" : ""}>已下线</option><option value="2" ${item && Number(item.status) === 2 ? "selected" : ""}>仅自己可见</option></select></label>
+      <label>热度分<input name="score" type="number" step="1" value="${esc(item ? item.score : 100)}" required /></label>
       <label>图片地址<input name="snapImage" value="${esc(item && item.snapImage)}" placeholder="可选，填写图片 URL" /></label>
       <label class="field-full">笔记内容<textarea name="desc" maxlength="500" required placeholder="写下这条笔记的内容">${esc(item && item.desc)}</textarea><small class="field-hint">最多 500 个字符</small></label>
     </div>`;
@@ -242,7 +243,7 @@
   $("authForm").addEventListener("submit", async (event) => { event.preventDefault(); const key = $("adminKey").value.trim(); if (!key) return; const button = event.target.querySelector("button"); button.disabled = true; try { state.key = key; await request("/auth", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ apiKey: key }) }); localStorage.setItem("campus-admin-key", key); hideGate(); toast("验证成功"); await loadCurrent(); } catch (error) { state.key = ""; $("authError").textContent = error.message || "密钥无效"; $("authError").classList.remove("hidden"); } finally { button.disabled = false; } });
   document.addEventListener("click", (event) => {
     const page = event.target.closest("[data-page-section]"); if (page && !page.disabled) { state.pages[page.dataset.pageSection] = Number(page.dataset.page); loadCurrent(); return; }
-    const edit = event.target.closest("[data-edit]"); if (edit) { const list = state[edit.dataset.edit] || []; const item = list.find((record) => String(record.userId || record.snapId || record.commentId) === String(edit.dataset.id)); if (item) openModal(edit.dataset.edit, item); return; }
+    const edit = event.target.closest("[data-edit]"); if (edit) { const entity = edit.dataset.edit; const idField = { users: "userId", snaps: "snapId", comments: "commentId" }[entity]; const list = state[entity] || []; const item = list.find((record) => String(record[idField]) === String(edit.dataset.id)); if (item) openModal(entity, item); return; }
     const remove = event.target.closest("[data-delete]"); if (remove) removeRecord(remove.dataset.delete, remove.dataset.id);
   });
   $("headerDate").textContent = new Date().toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" });

@@ -23,6 +23,8 @@ public class SnapInfo {
 
     private Integer status;
 
+    private Integer score;
+
     private String desc;
 
     private String userName;

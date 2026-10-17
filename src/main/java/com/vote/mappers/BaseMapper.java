@@ -1,6 +1,7 @@
 package com.vote.mappers;
 
 
+import com.vote.data.po.SnapInfo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

@@ -4,11 +4,12 @@
     <resultMap id="snapMap" type="com.vote.data.po.SnapInfo">
         <id column="snap_id" property="snapId"/><result column="user_id" property="userId"/>
         <result column="snap_image" property="snapImage"/><result column="status" property="status"/>
+        <result column="score" property="score"/>
         <result column="desc" property="desc"/><result column="type" property="type"/><result column="ctime" property="ctime"/>
         <result column="user_name" property="userName"/><result column="user_description" property="userDescription"/>
         <result column="major" property="major"/><result column="sex" property="sex"/>
     </resultMap>
-    <sql id="columns">s.snap_id,s.user_id,s.snap_image,s.status,s.`desc`,s.type,s.ctime,u.name user_name,u.description user_description,u.major,u.sex</sql>
+    <sql id="columns">s.snap_id,s.user_id,s.snap_image,s.status,s.score,s.`desc`,s.type,s.ctime,u.name user_name,u.description user_description,u.major,u.sex</sql>
     <sql id="joins">FROM snap s JOIN `user` u ON u.user_id=s.user_id</sql>
     <select id="selectSnapInfoList" resultMap="snapMap">SELECT <include refid="columns"/> <include refid="joins"/>
         WHERE s.status=0 AND u.status=0 ORDER BY s.snap_id DESC LIMIT #{offset},#{limit}</select>
@@ -64,14 +65,27 @@
             <if test="desc != null">`desc`=#{desc},</if>
             <if test="type != null">type=#{type},</if>
             <if test="status != null">status=#{status},</if>
+            <if test="score != null">score=#{score},</if>
         </set>
         WHERE snap_id=#{snapId}
     </update>
     <select id="selectMaxSnapId" resultType="java.lang.Integer">SELECT COALESCE(MAX(snap_id),0) FROM snap</select>
     <update id="updateStatus">UPDATE snap SET status=#{status} WHERE snap_id=#{snapId} AND user_id=#{userId}</update>
+    <update id="addScore">
+        UPDATE snap SET score=score+#{delta} WHERE snap_id=#{snapId}
+    </update>
+    <update id="decreaseAgedScores">
+        UPDATE snap SET score=score-#{delta} WHERE ctime &lt; #{cutoff}
+    </update>
+    <select id="selectAgedActiveSnaps" resultMap="snapMap">
+        SELECT snap_id,score,ctime FROM snap
+        WHERE status=0 AND ctime &lt; #{cutoff}
+          AND (ctime &gt; #{lastCtime} OR (ctime=#{lastCtime} AND snap_id &gt; #{lastSnapId}))
+        ORDER BY ctime,snap_id LIMIT #{limit}
+    </select>
     <select id="selectList" resultMap="snapMap">SELECT <include refid="columns"/> <include refid="joins"/> WHERE s.status=0 ORDER BY s.snap_id DESC</select>
     <insert id="insert" parameterType="com.vote.data.po.SnapInfo" useGeneratedKeys="true" keyProperty="bean.snapId" keyColumn="snap_id">
-        INSERT INTO snap(user_id,snap_image,status,`desc`,type,ctime)
-        VALUES(#{bean.userId},#{bean.snapImage},#{bean.status},#{bean.desc},#{bean.type},#{bean.ctime})
+        INSERT INTO snap(user_id,snap_image,status,score,`desc`,type,ctime)
+        VALUES(#{bean.userId},#{bean.snapImage},#{bean.status},#{bean.score},#{bean.desc},#{bean.type},#{bean.ctime})
     </insert>
 </mapper>

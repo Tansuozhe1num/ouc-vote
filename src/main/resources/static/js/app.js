@@ -1,6 +1,6 @@
 (function () {
-  const types = ["学习搭子", "旅游搭子", "恋爱搭子", "其他活动"];
-  const state = { page: 1, size: 16, loading: false, done: false, snaps: [], type: "", keyword: "", user: null, currentSnap: null, drawResult: null, authMode: "login", captchaKey: null, chatPeer: null, chatSnapId: null, viewedUser: null, publishing: false, publishRequestId: null, commenting: false, sendingMessage: false, feedRequestId: 0, feedAbortController: null, detailRequestId: 0, chatRequestId: 0 };
+  const types = ["学习搭子", "旅游搭子", "恋爱搭子", "其他活动", "游戏搭子"];
+  const state = { page: 1, size: 16, loading: false, done: false, snaps: [], rankSnaps: [], rankLoading: false, type: "", keyword: "", user: null, currentSnap: null, drawResult: null, authMode: "login", captchaKey: null, chatPeer: null, chatSnapId: null, viewedUser: null, publishing: false, publishRequestId: null, commenting: false, sendingMessage: false, feedRequestId: 0, feedAbortController: null, detailRequestId: 0, chatRequestId: 0 };
   const $ = (id) => document.getElementById(id);
   const masonry = $("masonry"), feedEmpty = $("feedEmpty"), feedEnd = $("feedEnd"), searchInput = $("searchInput");
   const viewButtons = Array.from(document.querySelectorAll("[data-view]"));
@@ -28,7 +28,8 @@
     "": { title: "在校园里，遇见刚好同频的人。", copy: "自习、出发、运动，下一段日常可以一起。" },
     "0": { title: "校园里，找到一起学习的伙伴。", copy: "找一位学习伙伴，分享学习进度，查漏补缺，取长补短。" },
     "1": { title: "说走就走。", copy: "叫上几位伙伴，来一场说走就走的旅程。" },
-    "2": { title: "心动不如行动。", copy: "发布动态或主动出击，找到心仪的 ta。" }
+    "2": { title: "心动不如行动。", copy: "发布动态或主动出击，找到心仪的 ta。" },
+    "4": { title: "游戏，多人玩才爽", copy: "四缺一，速度上号" }
   };
   function updateFeedIntro(type) {
     const copy = feedIntroCopy[type] || feedIntroCopy[""];
@@ -65,6 +66,49 @@
     renderCards(filtered, masonry);
     feedEmpty.classList.toggle("hidden", filtered.length > 0 || state.loading);
   }
+  function renderRank() {
+    const visible = state.rankSnaps.map((snap, index) => ({ snap, position: index + 1 }))
+      .filter((entry) => visibleSnaps([entry.snap]).length > 0);
+    const maxScore = Math.max(1, ...visible.map(({ snap }) => Number(snap.score) || 0));
+    $("rankList").innerHTML = visible.map(({ snap, position }) => {
+      const id = snapId(snap), name = snap.userName || snap.name || "同学";
+      const score = Number(snap.score) || 0;
+      const imageUrl = snap.snapImage ? OssImageCache.lookup(snap.snapImage) : "";
+      const cover = imageUrl
+        ? `<img data-oss="${escapeHtml(snap.snapImage)}" src="${escapeHtml(imageUrl)}" alt="" loading="lazy" />`
+        : `<span aria-hidden="true">✦</span>`;
+      const width = Math.max(7, Math.min(100, score / maxScore * 100));
+      const medal = position === 1 ? "✦" : position === 2 ? "✧" : position === 3 ? "✳" : "";
+      return `<article class="rank-entry rank-entry-${Math.min(position, 3)}" data-id="${escapeHtml(id)}" style="animation-delay:${Math.min((position - 1) * 45, 360)}ms">
+        <div class="rank-position"><span>${String(position).padStart(2, "0")}</span>${medal ? `<i>${medal}</i>` : ""}</div>
+        <div class="rank-cover ${imageUrl ? "" : "rank-cover-empty"}">${cover}</div>
+        <div class="rank-entry-copy"><div class="rank-entry-meta"><span class="rank-type">${escapeHtml(typeName(snap.type))}</span><span class="rank-community">校园人气</span></div><h3>${escapeHtml(snap.desc || "正在寻找同频的你")}</h3><div class="rank-author"><span class="avatar">${escapeHtml(firstChar(name))}</span><span><strong>${escapeHtml(name)}</strong><small>${escapeHtml(snap.major || "校园同学")}</small></span></div></div>
+        <div class="rank-score"><strong>${score.toLocaleString("zh-CN")}</strong><small>热度分</small><span class="rank-meter"><i style="width:${width}%"></i></span></div>
+        <span class="rank-entry-arrow" aria-hidden="true">↗</span>
+      </article>`;
+    }).join("");
+    OssImageCache.hydrate($("rankList"));
+    $("rankEmpty").classList.toggle("hidden", visible.length > 0 || state.rankLoading);
+  }
+  async function loadRank() {
+    if (state.rankLoading) return;
+    state.rankLoading = true;
+    $("rankLoading").classList.remove("hidden");
+    $("rankEmpty").classList.add("hidden");
+    try {
+      const data = await SnapApi.ranks();
+      state.rankSnaps = Array.isArray(data) ? data : [];
+      OssImageCache.warmup(state.rankSnaps.map((snap) => snap.snapImage).filter(Boolean));
+      renderRank();
+    } catch (e) {
+      toast(e.message || "热榜加载失败");
+      $("rankEmpty").classList.toggle("hidden", state.rankSnaps.length > 0);
+    } finally {
+      state.rankLoading = false;
+      $("rankLoading").classList.add("hidden");
+      renderRank();
+    }
+  }
   function resetFeed() {
     state.feedRequestId += 1;
     if (state.feedAbortController) state.feedAbortController.abort();
@@ -100,10 +144,11 @@
   }
 
   function setView(view) {
-    ["feed", "draw", "profile"].forEach((key) => $(key + "View").classList.toggle("hidden", key !== view));
+    ["feed", "draw", "rank", "profile"].forEach((key) => $(key + "View").classList.toggle("hidden", key !== view));
     setButtonSelection(viewButtons, (button) => button.dataset.view === view, "is-active");
     if (view === "feed") { location.hash = "#/feed"; }
     if (view === "draw") location.hash = "#/draw";
+    if (view === "rank") { location.hash = "#/rank"; loadRank(); }
     if (view === "profile") { location.hash = "#/profile"; loadProfile(); }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -249,6 +294,8 @@
 
   masonry.addEventListener("click", (event) => { const card = event.target.closest(".snap-card"); if (card) openDetail(card.dataset.id); });
   $("mySnaps").addEventListener("click", (event) => { const card = event.target.closest(".snap-card"); if (card) openDetail(card.dataset.id); });
+  $("rankList").addEventListener("click", (event) => { const entry = event.target.closest(".rank-entry"); if (entry) openDetail(entry.dataset.id); });
+  $("refreshRank").addEventListener("click", loadRank);
   $("commentList").addEventListener("click", (event) => {
     const button = event.target.closest(".comment-avatar-button");
     if (!button || button.disabled) return;
@@ -271,7 +318,7 @@
     state.type = button.dataset.type; updateFeedIntro(state.type); resetFeed();
   }));
   let searchTimer;
-  searchInput.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.keyword = searchInput.value; renderFeed(); }, 160); });
+  searchInput.addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { state.keyword = searchInput.value; renderFeed(); renderRank(); }, 160); });
   $("loginButton").addEventListener("click", () => openAuth("login")); $("userChip").addEventListener("click", () => setView("profile"));
   $("openPublish").addEventListener("click", () => state.user ? showOverlay("publishOverlay") : openAuth("login"));
   $("mobilePublish").addEventListener("click", () => state.user ? showOverlay("publishOverlay") : openAuth("login"));
@@ -415,6 +462,8 @@
     finally { state.sendingMessage = false; button.disabled = false; }
   });
   const observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) loadMore(); }, { rootMargin: "500px" }); observer.observe($("feedSentinel"));
-  window.addEventListener("hashchange", () => { const hash = location.hash || "#/feed"; if (hash === "#/draw") setView("draw"); else if (hash === "#/profile") setView("profile"); else setView("feed"); });
+  window.addEventListener("hashchange", () => { const hash = location.hash || "#/feed"; if (hash === "#/draw") setView("draw"); else if (hash === "#/rank") setView("rank"); else if (hash === "#/profile") setView("profile"); else setView("feed"); });
+  const initialRoute = (location.hash || "#/feed").slice(2);
+  if (["feed", "draw", "rank", "profile"].includes(initialRoute)) setView(initialRoute);
   checkSession(); loadMore();
 })();

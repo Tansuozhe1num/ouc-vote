@@ -1,5 +1,6 @@
 package com.vote.server.impl;
 
+import com.vote.data.constants.Constants;
 import com.vote.data.enums.CommentStatusEnum;
 import com.vote.data.po.CommentInfo;
 import com.vote.data.po.SnapInfo;
@@ -10,6 +11,7 @@ import com.vote.query.CommentInfoQuery;
 import com.vote.query.SnapInfoQuery;
 import com.vote.server.CommentServer;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -28,6 +30,9 @@ public class CommentServerImpl implements CommentServer {
 
     @Resource
     private SnapInfoMapper<SnapInfo, SnapInfoQuery> snapInfoMapper;
+
+    @Resource
+    private SnapScoreService snapScoreService;
 
     @Override
     public List<CommentInfo> getCommentList(Integer snapId, Integer page, Integer size) {
@@ -53,6 +58,7 @@ public class CommentServerImpl implements CommentServer {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommentInfo saveComment(Integer snapId, Long userId, String text) {
         if (snapId == null || snapId <= 0) {
             throw new BusinessException("snapId不能为空");
@@ -81,6 +87,8 @@ public class CommentServerImpl implements CommentServer {
                 .status(CommentStatusEnum.Normal.getStatus())
                 .build();
         this.commentInfoMapper.insert(commentInfo);
+
+        snapScoreService.adjustScore(snapId, Constants.CommentRankScore);
         return commentInfo;
     }
 
@@ -103,6 +111,7 @@ public class CommentServerImpl implements CommentServer {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteComment(Integer commentId) {
         CommentInfo exist = getCommentById(commentId);
         Integer rows = this.commentInfoMapper.updateStatus(
@@ -112,5 +121,6 @@ public class CommentServerImpl implements CommentServer {
         if (rows == null || rows == 0) {
             throw new BusinessException("删除失败");
         }
+        snapScoreService.adjustScore(exist.getSnapId(), -Constants.CommentRankScore);
     }
 }

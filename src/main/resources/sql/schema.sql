@@ -36,13 +36,15 @@ CREATE TABLE IF NOT EXISTS snap (
   user_id BIGINT NOT NULL,
   snap_image VARCHAR(512) DEFAULT NULL,
   status TINYINT NOT NULL DEFAULT 0 COMMENT '0寻找中 1停止/删除 2仅自己可见',
+  score INT NOT NULL DEFAULT 100 COMMENT '热度分',
   `desc` VARCHAR(500) NOT NULL,
-  type INT NOT NULL COMMENT '0学习 1旅游 2恋爱 3其他',
+  type INT NOT NULL COMMENT '0学习 1旅游 2恋爱 3其他 4游戏',
   ctime BIGINT NOT NULL,
   PRIMARY KEY (snap_id),
   KEY idx_snap_feed (status,type,snap_id),
   KEY idx_snap_user (user_id,status,snap_id),
-  KEY idx_snap_random (status,snap_id)
+  KEY idx_snap_random (status,snap_id),
+  KEY idx_snap_score_decay (ctime,snap_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='找搭子信息';
 
 CREATE TABLE IF NOT EXISTS message (

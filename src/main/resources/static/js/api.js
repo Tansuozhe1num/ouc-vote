@@ -27,6 +27,7 @@ const AuthApi = {
 const SnapApi = {
   list(page, size, type, options) { const filter = type === "" || type == null ? "" : `&type=${encodeURIComponent(type)}`; return request(`/snap/list?page=${page}&size=${size}${filter}`, options); },
   detail(snapId) { return request(`/snap/detail?snapId=${encodeURIComponent(snapId)}`); },
+  ranks() { return request("/snap/ranks"); },
   mine(page, size) { return request(`/snap/mine?page=${page}&size=${size}`); },
   save(formData, idempotencyKey) {
     return request("/snap/save", { method: "POST", headers: { "Idempotency-Key": idempotencyKey }, body: formData });

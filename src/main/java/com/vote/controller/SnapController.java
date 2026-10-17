@@ -58,4 +58,10 @@ public class SnapController extends ABaseController {
 
     @GetMapping("/draw")
     public ResponseVO draw(HttpServletRequest request) { return getSuccessResponseVO(matchServer.draw(AuthContext.requireUserId(request))); }
+
+    @GetMapping("/ranks")
+    public ResponseVO ranks(HttpServletRequest request) {
+        List<SnapInfo> hotRank = snapServer.getHotRank();
+        return getSuccessResponseVO(hotRank);
+    }
 }

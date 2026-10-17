@@ -1,5 +1,6 @@
 package com.vote.server.impl;
 
+import com.vote.data.constants.Constants;
 import com.vote.data.enums.CommentStatusEnum;
 import com.vote.data.po.ChildCommentInfo;
 import com.vote.data.po.CommentInfo;
@@ -13,6 +14,7 @@ import com.vote.query.CommentInfoQuery;
 import com.vote.query.SnapInfoQuery;
 import com.vote.server.ChildCommentServer;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -34,6 +36,9 @@ public class ChildCommentServerImpl implements ChildCommentServer {
 
     @Resource
     private SnapInfoMapper<SnapInfo, SnapInfoQuery> snapInfoMapper;
+
+    @Resource
+    private SnapScoreService snapScoreService;
 
     @Override
     public List<ChildCommentInfo> getChildCommentList(Integer parentId, Integer page, Integer size) {
@@ -66,6 +71,7 @@ public class ChildCommentServerImpl implements ChildCommentServer {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ChildCommentInfo saveChildComment(Integer snapId, Integer parentId, Long userId, String text) {
         if (snapId == null || snapId <= 0) {
             throw new BusinessException("snapId不能为空");
@@ -107,6 +113,8 @@ public class ChildCommentServerImpl implements ChildCommentServer {
                 .status(CommentStatusEnum.Normal.getStatus())
                 .build();
         this.childCommentInfoMapper.insert(child);
+
+        snapScoreService.adjustScore(snapId, Constants.ChildCommentRankScore);
         return child;
     }
 
@@ -129,6 +137,7 @@ public class ChildCommentServerImpl implements ChildCommentServer {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteChildComment(Integer cId) {
         ChildCommentInfo exist = getChildCommentById(cId);
         Integer rows = this.childCommentInfoMapper.updateStatus(
@@ -138,6 +147,7 @@ public class ChildCommentServerImpl implements ChildCommentServer {
         if (rows == null || rows == 0) {
             throw new BusinessException("删除失败");
         }
+        snapScoreService.adjustScore(exist.getSnapId(), -Constants.ChildCommentRankScore);
     }
 
     /**

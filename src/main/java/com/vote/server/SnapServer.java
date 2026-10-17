@@ -15,4 +15,6 @@ public interface SnapServer {
     List<SnapInfo> getMySnapInfoList(Long userId, Integer page, Integer size);
 
     boolean updateStatus(Long userId, Integer snapId, Integer status);
+
+    List<SnapInfo> getHotRank();
 }
