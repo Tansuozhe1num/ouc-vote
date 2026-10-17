@@ -3,6 +3,7 @@ package com.vote.config;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
+import org.redisson.config.SingleServerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,11 +24,17 @@ public class RedisConf<V> {
     @Value("${spring.redis.port}")
     private Integer redisPort;
 
+    @Value("${spring.redis.password:}")
+    private String redisPassword;
+
     @Bean(name = "redissonClient", destroyMethod = "shutdown")
     public RedissonClient redissonClient() {
         try {
             Config config = new Config();
-            config.useSingleServer().setAddress("redis://" + redisHost + ":" + redisPort);
+            SingleServerConfig serverConfig = config.useSingleServer().setAddress("redis://" + redisHost + ":" + redisPort);
+            if (redisPassword != null && !redisPassword.trim().isEmpty()) {
+                serverConfig.setPassword(redisPassword);
+            }
             RedissonClient redissonClient = Redisson.create(config);
             return redissonClient;
         } catch (Exception e) {
