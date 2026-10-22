@@ -10,7 +10,7 @@ public interface SnapServer {
 
     SnapInfo getSnapInfoById(Integer snapId);
 
-    SnapInfo saveSnapInfo(Long userId, MultipartFile avatar, String desc, Integer type, String idempotencyKey);
+    SnapInfo saveSnapInfo(Long userId, MultipartFile avatar, String title, String desc, Integer type, String idempotencyKey);
 
     List<SnapInfo> getMySnapInfoList(Long userId, Integer page, Integer size);
 

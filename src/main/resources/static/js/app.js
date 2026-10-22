@@ -49,7 +49,7 @@
     return source.filter((snap) => {
       const authorName = snap.userName || snap.name || "";
       const major = snap.major || "";
-      return !needle || [snap.desc, authorName, major].join(" ").toLocaleLowerCase().includes(needle);
+      return !needle || [snap.title, snap.desc, authorName, major].join(" ").toLocaleLowerCase().includes(needle);
     });
   }
   function renderCards(list, target) {
@@ -57,7 +57,7 @@
       const id = snapId(snap), name = snap.userName || snap.name || "同學";
       const imageUrl = snap.snapImage ? OssImageCache.lookup(snap.snapImage) : "";
       const coverClass = imageUrl ? "snap-cover" : "snap-cover no-image";
-      return `<article class="snap-card" data-id="${escapeHtml(id)}" style="animation-delay:${Math.min(index * 35, 280)}ms"><div class="${coverClass}">${imageUrl ? `<img data-oss="${escapeHtml(snap.snapImage)}" src="${escapeHtml(imageUrl)}" alt="" loading="lazy" />` : ""}<span class="snap-type">${escapeHtml(typeName(snap.type))}</span></div><div class="snap-body"><p class="snap-desc">${escapeHtml(snap.desc || "正在寻找同频的你")}</p><div class="snap-author"><span class="avatar">${escapeHtml(firstChar(name))}</span><span><strong>${escapeHtml(name)}</strong><small class="snap-major">${escapeHtml(snap.major || "校园同学")}</small></span></div></div></article>`;
+      return `<article class="snap-card" data-id="${escapeHtml(id)}" style="animation-delay:${Math.min(index * 35, 280)}ms"><div class="${coverClass}">${imageUrl ? `<img data-oss="${escapeHtml(snap.snapImage)}" src="${escapeHtml(imageUrl)}" alt="" loading="lazy" />` : ""}<span class="snap-type">${escapeHtml(typeName(snap.type))}</span></div><div class="snap-body"><h2 class="snap-title">${escapeHtml(snap.title || "正在寻找同频的你")}</h2><div class="snap-author"><span class="avatar">${escapeHtml(firstChar(name))}</span><span><strong>${escapeHtml(name)}</strong><small class="snap-major">${escapeHtml(snap.major || "校园同学")}</small></span></div></div></article>`;
     }).join("");
     OssImageCache.hydrate(target);
   }
@@ -82,7 +82,7 @@
       return `<article class="rank-entry rank-entry-${Math.min(position, 3)}" data-id="${escapeHtml(id)}" style="animation-delay:${Math.min((position - 1) * 45, 360)}ms">
         <div class="rank-position"><span>${String(position).padStart(2, "0")}</span>${medal ? `<i>${medal}</i>` : ""}</div>
         <div class="rank-cover ${imageUrl ? "" : "rank-cover-empty"}">${cover}</div>
-        <div class="rank-entry-copy"><div class="rank-entry-meta"><span class="rank-type">${escapeHtml(typeName(snap.type))}</span><span class="rank-community">校园人气</span></div><h3>${escapeHtml(snap.desc || "正在寻找同频的你")}</h3><div class="rank-author"><span class="avatar">${escapeHtml(firstChar(name))}</span><span><strong>${escapeHtml(name)}</strong><small>${escapeHtml(snap.major || "校园同学")}</small></span></div></div>
+        <div class="rank-entry-copy"><div class="rank-entry-meta"><span class="rank-type">${escapeHtml(typeName(snap.type))}</span><span class="rank-community">校园人气</span></div><h3>${escapeHtml(snap.title || "正在寻找同频的你")}</h3><div class="rank-author"><span class="avatar">${escapeHtml(firstChar(name))}</span><span><strong>${escapeHtml(name)}</strong><small>${escapeHtml(snap.major || "校园同学")}</small></span></div></div>
         <div class="rank-score"><strong>${score.toLocaleString("zh-CN")}</strong><small>热度分</small><span class="rank-meter"><i style="width:${width}%"></i></span></div>
         <span class="rank-entry-arrow" aria-hidden="true">↗</span>
       </article>`;
@@ -212,10 +212,13 @@
     const authorId = snap.userId, authorName = snap.userName || snap.name || "同学";
     $("detailName").textContent = authorName; $("detailAvatar").textContent = firstChar(authorName);
     $("detailMeta").textContent = [snap.major, snap.sex === 1 ? "女生" : "同学"].filter(Boolean).join(" · ");
-    $("detailType").textContent = typeName(snap.type); $("detailDesc").textContent = snap.desc || "正在寻找同频的你";
+    $("detailType").textContent = typeName(snap.type); $("detailTitle").textContent = snap.title || "正在寻找同频的你"; $("detailDesc").textContent = snap.desc || "正在寻找同频的你";
     const photo = $("detailPhoto"), image = $("detailImage");
-    if (snap.snapImage) { photo.classList.remove("empty-image"); image.classList.remove("hidden"); image.dataset.oss = snap.snapImage; image.src = OssImageCache.lookup(snap.snapImage); OssImageCache.store(snap.snapImage).then((local) => { if (local && state.currentSnap === snap) image.src = local; }); }
-    else { photo.classList.add("empty-image"); image.classList.add("hidden"); }
+    const zoomButton = $("detailImageZoom");
+    photo.classList.remove("is-zoomed");
+    if (snap.snapImage) { photo.classList.remove("empty-image"); image.classList.remove("hidden"); zoomButton.classList.remove("hidden"); zoomButton.textContent = "放大"; zoomButton.setAttribute("aria-label", "放大图片"); image.dataset.oss = snap.snapImage; image.src = OssImageCache.lookup(snap.snapImage); OssImageCache.store(snap.snapImage).then((local) => { if (local && state.currentSnap === snap) image.src = local; }); }
+    else { photo.classList.add("empty-image"); image.classList.add("hidden"); zoomButton.classList.add("hidden"); }
+    $("detailScroll").scrollTop = 0;
     const own = state.user && String(currentUserId(state.user)) === String(authorId);
     $("followButton").classList.toggle("hidden", own || !state.user);
     $("detailAuthor").dataset.userId = authorId;
@@ -254,7 +257,7 @@
     const button = $("drawButton"), card = $("drawCard"); state.drawResult = null; button.disabled = true; $("drawChat").disabled = true; $("drawButtonLabel").textContent = "缘分正在靠近"; card.classList.add("is-drawing"); card.classList.remove("is-ready"); card.removeAttribute("title");
     try {
       const result = await SnapApi.draw(); state.drawResult = result;
-      $("drawType").textContent = typeName(result.type); $("drawTitle").textContent = result.desc || "正在寻找同频的你";
+      $("drawType").textContent = typeName(result.type); $("drawTitle").textContent = result.title || "正在寻找同频的你";
       $("drawDesc").textContent = "TA 正在校园里，等待一个友好的招呼。";
       const name = result.userName || "同学"; $("drawName").textContent = name; $("drawMajor").textContent = result.major || "校园同学"; $("drawAvatar").textContent = firstChar(name);
       $("drawCardArt").classList.add("ready"); $("drawCardArt").innerHTML = "✦"; $("drawChat").disabled = false;
@@ -409,9 +412,15 @@
   });
   $("closePublish").addEventListener("click", () => hideOverlay("publishOverlay")); $("closeDetail").addEventListener("click", () => hideOverlay("detailOverlay"));
   $("closeInbox").addEventListener("click", () => hideOverlay("inboxOverlay")); $("closeChat").addEventListener("click", () => hideOverlay("chatOverlay")); $("closeList").addEventListener("click", () => hideOverlay("listOverlay"));
+  $("detailImageZoom").addEventListener("click", () => {
+    const zoomed = $("detailPhoto").classList.toggle("is-zoomed");
+    $("detailImageZoom").textContent = zoomed ? "还原" : "放大";
+    $("detailImageZoom").setAttribute("aria-label", zoomed ? "还原图片大小" : "放大图片");
+  });
   ["detailOverlay", "publishOverlay", "profileEditOverlay", "authOverlay", "inboxOverlay", "chatOverlay", "listOverlay"].forEach((id) => $(id).addEventListener("click", (event) => { if (event.target === $(id)) hideOverlay(id); }));
   $("avatarInput").addEventListener("change", (event) => { const file = event.target.files && event.target.files[0]; if (!file) return; const preview = $("coverPreview"); preview.src = URL.createObjectURL(file); preview.classList.remove("hidden"); $("coverHint").classList.add("hidden"); });
   $("publishForm").elements.desc.addEventListener("input", (event) => { $("descCount").textContent = String(event.target.value.length); });
+  $("publishForm").elements.title.addEventListener("input", (event) => { $("titleCount").textContent = String(event.target.value.length); });
   postTypeButtons.forEach((button) => button.addEventListener("click", () => {
     setButtonSelection(postTypeButtons, (option) => option === button, "is-selected");
     $("postType").value = button.dataset.postType;
@@ -429,7 +438,7 @@
     try {
       await SnapApi.save(data, state.publishRequestId);
       state.publishRequestId = newRequestId();
-      form.reset(); setButtonSelection(postTypeButtons, (option) => option.dataset.postType === "0", "is-selected"); $("postType").value = "0"; $("coverPreview").classList.add("hidden"); $("coverHint").classList.remove("hidden"); $("descCount").textContent = "0"; hideOverlay("publishOverlay"); state.type = ""; updateFeedIntro(state.type); setButtonSelection(typeButtons, (button) => button.dataset.type === "", "is-active"); resetFeed(); toast("动态发布成功");
+      form.reset(); setButtonSelection(postTypeButtons, (option) => option.dataset.postType === "0", "is-selected"); $("postType").value = "0"; $("coverPreview").classList.add("hidden"); $("coverHint").classList.remove("hidden"); $("descCount").textContent = "0"; $("titleCount").textContent = "0"; hideOverlay("publishOverlay"); state.type = ""; updateFeedIntro(state.type); setButtonSelection(typeButtons, (button) => button.dataset.type === "", "is-active"); resetFeed(); toast("动态发布成功");
     } catch (e) { error.textContent = e.message || "发布失败"; error.classList.remove("hidden"); }
     finally { state.publishing = false; button.disabled = false; button.innerHTML = button.dataset.originalText || "发布到广场 <span>→</span>"; }
   });

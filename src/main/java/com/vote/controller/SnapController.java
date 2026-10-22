@@ -41,6 +41,7 @@ public class SnapController extends ABaseController {
 
     @PostMapping("/save")
     public ResponseVO save(@RequestParam(value = "avatar", required = false) MultipartFile avatar,
+                           @RequestParam String title,
                            @RequestParam String desc,
                            @RequestParam Integer type,
                            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
@@ -48,7 +49,7 @@ public class SnapController extends ABaseController {
         String requestKey = StringUtils.hasText(idempotencyKey)
                 ? idempotencyKey.trim()
                 : UUID.randomUUID().toString();
-        return getSuccessResponseVO(snapServer.saveSnapInfo(AuthContext.requireUserId(request), avatar, desc, type, requestKey));
+        return getSuccessResponseVO(snapServer.saveSnapInfo(AuthContext.requireUserId(request), avatar, title, desc, type, requestKey));
     }
 
     @PostMapping("/status")

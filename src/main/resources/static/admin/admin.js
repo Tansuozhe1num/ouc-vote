@@ -101,7 +101,7 @@
     const body = $("snapsBody"), items = result.items || [];
     $("snapsEmpty").classList.toggle("hidden", items.length > 0);
     body.innerHTML = items.map((snap) => `<tr>
-      <td class="id-col">#${esc(snap.snapId)}</td><td class="desc-cell" title="${esc(snap.desc)}">${esc(snap.desc || "—")}</td>
+      <td class="id-col">#${esc(snap.snapId)}</td><td class="desc-cell" title="${esc(snap.title)}">${esc(snap.title || "—")}</td>
       <td><div class="user-cell"><span class="avatar">${esc(initials(snap.userName))}</span><span><strong>${esc(snap.userName || "未知用户")}</strong><small>ID ${esc(snap.userId)}</small></span></div></td>
       <td><span class="type-tag">${esc(typeName(snap.type))}</span></td><td>${statusTag(snap.status, "snap")}</td><td>${esc(snap.score == null ? 100 : snap.score)}</td><td class="muted-cell">${formatDate(snap.ctime)}</td>
       <td class="action-col"><div class="row-actions"><button class="row-action" data-edit="snaps" data-id="${esc(snap.snapId)}">编辑</button><button class="row-action danger" data-delete="snaps" data-id="${esc(snap.snapId)}">删除</button></div></td>
@@ -184,6 +184,7 @@
       <label>状态<select name="status"><option value="0" ${!item || Number(item.status) === 0 ? "selected" : ""}>公开</option><option value="1" ${item && Number(item.status) === 1 ? "selected" : ""}>已下线</option><option value="2" ${item && Number(item.status) === 2 ? "selected" : ""}>仅自己可见</option></select></label>
       <label>热度分<input name="score" type="number" step="1" value="${esc(item ? item.score : 100)}" required /></label>
       <label>图片地址<input name="snapImage" value="${esc(item && item.snapImage)}" placeholder="可选，填写图片 URL" /></label>
+      <label class="field-full">笔记标题<input name="title" value="${esc(item && item.title)}" maxlength="100" required placeholder="用一句话介绍这条笔记" /></label>
       <label class="field-full">笔记内容<textarea name="desc" maxlength="500" required placeholder="写下这条笔记的内容">${esc(item && item.desc)}</textarea><small class="field-hint">最多 500 个字符</small></label>
     </div>`;
     return `<div class="field-grid">

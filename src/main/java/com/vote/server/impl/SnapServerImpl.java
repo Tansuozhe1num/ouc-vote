@@ -65,10 +65,16 @@ public class SnapServerImpl implements SnapServer {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public SnapInfo saveSnapInfo(Long userId, MultipartFile avatar, String desc, Integer type, String idempotencyKey) {
+    public SnapInfo saveSnapInfo(Long userId, MultipartFile avatar, String title, String desc, Integer type, String idempotencyKey) {
         User user = userMapper.selectByUserId(userId);
         if (userId == null || user == null || user.getStatus() == null || user.getStatus() != 0) {
             throw new BusinessException("用户不存在");
+        }
+        if (!StringUtils.hasText(title)) {
+            throw new BusinessException("请填写标题");
+        }
+        if (title.trim().length() > 100) {
+            throw new BusinessException("标题不能超过 100 字");
         }
         if (!StringUtils.hasText(desc)) {
             throw new BusinessException("请写下你想找的搭子");
@@ -113,6 +119,7 @@ public class SnapServerImpl implements SnapServer {
             SnapInfo snapInfo = SnapInfo.builder()
                     .userId(userId)
                     .snapImage(url)
+                    .title(title.trim())
                     .desc(desc.trim())
                     .type(type)
                     .ctime(System.currentTimeMillis())

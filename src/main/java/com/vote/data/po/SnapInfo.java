@@ -25,6 +25,8 @@ public class SnapInfo {
 
     private Integer score;
 
+    private String title;
+
     private String desc;
 
     private String userName;

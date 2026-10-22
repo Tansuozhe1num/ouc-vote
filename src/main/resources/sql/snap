@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS snap (
     snap_id INT NOT NULL AUTO_INCREMENT,
     user_id BIGINT NOT NULL,
+    title VARCHAR(100) NOT NULL DEFAULT '',
     snap_image VARCHAR(512) DEFAULT NULL,
     status TINYINT NOT NULL DEFAULT 0 COMMENT '0寻找中 1停止/删除 2仅自己可见',
     `desc` VARCHAR(500) NOT NULL,

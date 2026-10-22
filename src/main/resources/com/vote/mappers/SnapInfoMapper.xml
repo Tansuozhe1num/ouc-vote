@@ -5,11 +5,11 @@
         <id column="snap_id" property="snapId"/><result column="user_id" property="userId"/>
         <result column="snap_image" property="snapImage"/><result column="status" property="status"/>
         <result column="score" property="score"/>
-        <result column="desc" property="desc"/><result column="type" property="type"/><result column="ctime" property="ctime"/>
+        <result column="title" property="title"/><result column="desc" property="desc"/><result column="type" property="type"/><result column="ctime" property="ctime"/>
         <result column="user_name" property="userName"/><result column="user_description" property="userDescription"/>
         <result column="major" property="major"/><result column="sex" property="sex"/>
     </resultMap>
-    <sql id="columns">s.snap_id,s.user_id,s.snap_image,s.status,s.score,s.`desc`,s.type,s.ctime,u.name user_name,u.description user_description,u.major,u.sex</sql>
+    <sql id="columns">s.snap_id,s.user_id,s.snap_image,s.status,s.score,s.title,s.`desc`,s.type,s.ctime,u.name user_name,u.description user_description,u.major,u.sex</sql>
     <sql id="joins">FROM snap s JOIN `user` u ON u.user_id=s.user_id</sql>
     <select id="selectSnapInfoList" resultMap="snapMap">SELECT <include refid="columns"/> <include refid="joins"/>
         WHERE s.status=0 AND u.status=0 ORDER BY s.snap_id DESC LIMIT #{offset},#{limit}</select>
@@ -28,7 +28,8 @@
         SELECT <include refid="columns"/> FROM snap s LEFT JOIN `user` u ON u.user_id=s.user_id
         <where>
             <if test="keyword != null and keyword != ''">
-                AND (s.`desc` LIKE CONCAT('%',#{keyword},'%')
+                AND (s.title LIKE CONCAT('%',#{keyword},'%')
+                OR s.`desc` LIKE CONCAT('%',#{keyword},'%')
                 OR u.name LIKE CONCAT('%',#{keyword},'%')
                 OR u.major LIKE CONCAT('%',#{keyword},'%')
                 OR CAST(s.snap_id AS CHAR) LIKE CONCAT('%',#{keyword},'%'))
@@ -42,7 +43,8 @@
         SELECT COUNT(1) FROM snap s LEFT JOIN `user` u ON u.user_id=s.user_id
         <where>
             <if test="keyword != null and keyword != ''">
-                AND (s.`desc` LIKE CONCAT('%',#{keyword},'%')
+                AND (s.title LIKE CONCAT('%',#{keyword},'%')
+                OR s.`desc` LIKE CONCAT('%',#{keyword},'%')
                 OR u.name LIKE CONCAT('%',#{keyword},'%')
                 OR u.major LIKE CONCAT('%',#{keyword},'%')
                 OR CAST(s.snap_id AS CHAR) LIKE CONCAT('%',#{keyword},'%'))
@@ -62,6 +64,7 @@
         <set>
             <if test="userId != null">user_id=#{userId},</if>
             <if test="snapImage != null">snap_image=#{snapImage},</if>
+            <if test="title != null">title=#{title},</if>
             <if test="desc != null">`desc`=#{desc},</if>
             <if test="type != null">type=#{type},</if>
             <if test="status != null">status=#{status},</if>
@@ -85,7 +88,7 @@
     </select>
     <select id="selectList" resultMap="snapMap">SELECT <include refid="columns"/> <include refid="joins"/> WHERE s.status=0 ORDER BY s.snap_id DESC</select>
     <insert id="insert" parameterType="com.vote.data.po.SnapInfo" useGeneratedKeys="true" keyProperty="bean.snapId" keyColumn="snap_id">
-        INSERT INTO snap(user_id,snap_image,status,score,`desc`,type,ctime)
-        VALUES(#{bean.userId},#{bean.snapImage},#{bean.status},#{bean.score},#{bean.desc},#{bean.type},#{bean.ctime})
+        INSERT INTO snap(user_id,snap_image,status,score,title,`desc`,type,ctime)
+        VALUES(#{bean.userId},#{bean.snapImage},#{bean.status},#{bean.score},#{bean.title},#{bean.desc},#{bean.type},#{bean.ctime})
     </insert>
 </mapper>

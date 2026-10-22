@@ -159,12 +159,15 @@ public class AdminController extends ABaseController {
     @Transactional(rollbackFor = Exception.class)
     public ResponseVO saveSnap(@RequestParam(required = false) Integer snapId,
                                @RequestParam Long userId,
+                               @RequestParam String title,
                                @RequestParam String desc,
                                @RequestParam Integer type,
                                String snapImage, Integer status, Integer score, HttpServletRequest request) {
         require(request);
         User owner = userMapper.selectByUserId(userId);
         if (owner == null) throw new BusinessException("发布用户不存在");
+        String titleText = required(title, "笔记标题不能为空");
+        if (titleText.length() > 100) throw new BusinessException("笔记标题不能超过 100 字");
         String content = required(desc, "笔记内容不能为空");
         if (content.length() > 500) throw new BusinessException("笔记内容不能超过 500 字");
         if (type == null || type < 0 || type > 4) throw new BusinessException("笔记类型无效");
@@ -173,13 +176,13 @@ public class AdminController extends ABaseController {
         SnapInfo snap;
         if (snapId == null) {
             Integer initialScore = score == null ? Constants.DefaultRankScore : score;
-            snap = SnapInfo.builder().userId(userId).snapImage(snapImage == null ? null : snapImage.trim()).desc(content)
+            snap = SnapInfo.builder().userId(userId).snapImage(snapImage == null ? null : snapImage.trim()).title(titleText).desc(content)
                     .type(type).status(nextStatus).score(initialScore).ctime(System.currentTimeMillis()).build();
             snapMapper.insert(snap);
         } else {
             snap = snapMapper.adminSelectBySnapId(snapId);
             if (snap == null) throw new BusinessException("笔记不存在");
-            snap.setUserId(userId); snap.setSnapImage(snapImage == null ? null : snapImage.trim()); snap.setDesc(content);
+            snap.setUserId(userId); snap.setSnapImage(snapImage == null ? null : snapImage.trim()); snap.setTitle(titleText); snap.setDesc(content);
             snap.setType(type); snap.setStatus(nextStatus);
             if (score != null) snap.setScore(score);
             snapMapper.adminUpdate(snap);
